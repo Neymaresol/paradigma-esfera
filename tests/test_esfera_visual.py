@@ -9,3 +9,9 @@ def test_esfera_prototype_renders_safely():
     assert 'EXPANSÃO' in response.text
     assert 'Operações comerciais não habilitadas' in response.text
     assert response.headers['content-security-policy']
+
+def test_esfera_visual_does_not_change_commercial_gate():
+    response = TestClient(app).get('/api/affiliate/readiness')
+    assert response.status_code == 200
+    assert response.json()['publication_allowed'] is False
+    assert response.json()['attribution_verified'] is False
