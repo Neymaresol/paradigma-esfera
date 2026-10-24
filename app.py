@@ -151,11 +151,21 @@ def ops_dashboard(actor: dict = Depends(require_operator)):
 from fastapi.responses import RedirectResponse
 
 AFFILIATE_OFFERS = {
-    "hotmart-inicial": {
-        "title": "Oferta digital na Hotmart",
+    "lembrancinhas-flores-eva": {
+        "title": "Lembrancinhas e Flores em E.V.A",
         "url": "https://go.hotmart.com/G108129576P",
         "provider": "Hotmart",
-    }
+    },
+    "leadlovers-mais-vendas": {
+        "title": "Leadlovers — Mais Vendas, Menos Esforço",
+        "url": "https://go.hotmart.com/A107958015J",
+        "provider": "Hotmart",
+    },
+    "viva-sempre-com-dinheiro": {
+        "title": "Viva Sempre com Dinheiro",
+        "url": "https://go.hotmart.com/J107828590U",
+        "provider": "Hotmart",
+    },
 }
 
 def affiliate_publication_allowed():
