@@ -223,3 +223,16 @@ def tags_preview(channel: str = "direct", campaign: str = "", offer_id: str = "h
             "campaign": safe_campaign(campaign),
             "internal_landing": landing(offer_id, channel, campaign),
             "source_verified": False, "publication_allowed": affiliate_publication_allowed()}
+
+
+# Sales acquisition: reviewable campaign drafts, no unverified affiliate redirects.
+from esfera_sales_funnel import draft as sales_draft
+
+@app.get("/api/sales/campaign-draft")
+def sales_campaign_draft(channel: str = "instagram", lang: str = "pt",
+                         offer_id: str = "hotmart-inicial", campaign: str = ""):
+    if offer_id not in AFFILIATE_OFFERS:
+        raise HTTPException(404, "Oferta não encontrada")
+    if lang not in ("pt", "en", "es"):
+        raise HTTPException(400, "Idioma não permitido")
+    return sales_draft(channel, offer_id, campaign, lang)
