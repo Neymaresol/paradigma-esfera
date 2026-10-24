@@ -1,0 +1,20 @@
+name: ESFERA Cell Queue
+on:
+  pull_request:
+    paths:
+      - 'esfera_cell_queue.py'
+      - 'tests/test_esfera_cell_queue.py'
+      - '.github/workflows/esfera-cell-queue.yml'
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - run: python -m pytest tests/test_esfera_cell_queue.py -q
