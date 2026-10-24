@@ -1,0 +1,24 @@
+name: ESFERA Commercial Gates
+on:
+  pull_request:
+    paths:
+      - 'app.py'
+      - 'esfera_auth.py'
+      - 'esfera_ops.py'
+      - 'tests/**'
+      - '.github/workflows/commercial-gates.yml'
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run commercial tests
+        run: python -m pytest tests/test_affiliate_release_gates.py -q
