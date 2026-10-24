@@ -69,12 +69,12 @@ def languages():
 def readiness():
     return {'status':'NOT_READY_FOR_SALES','verified_payments':False,'fulfillment_verified':False,'tax_and_privacy_review':False,'payment_provider_connected':False,'marketing_permissions_verified':False,'publish_allowed':False}
 
-@app.get('/',response_class=HTMLResponse)
+@app.get('/catalogo',response_class=HTMLResponse)
 def home(lang: str = Query(default='pt')):
     if lang not in I18N: raise HTTPException(400,'Unsupported language')
     t=I18N[lang]
     cards=''.join(f'<article><span>{escape(t["course"] if p["category"]=="Cursos" else t["service"])}</span><h3>{escape(p["name"])}</h3><strong>R$ {p["price_brl"]:.2f}</strong><p>{escape(t["pending"])}</p></article>' for p in CATALOG)
-    links=' '.join(f'<a href="/?lang={code}" lang="{code}" aria-label="{code}">{code.upper()}</a>' for code in I18N)
+    links=' '.join(f'<a href="/catalogo?lang={code}" lang="{code}" aria-label="{code}">{code.upper()}</a>' for code in I18N)
     direction='rtl' if lang=='ar' else 'ltr'
     return f'''<!doctype html><html lang="{lang}" dir="{direction}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PARADIGMA ESFERA 1.2</title><style>body{{margin:0;background:#071226;color:#eaf5ff;font:16px system-ui}}header{{padding:48px 6%;background:radial-gradient(circle at 70% 30%,#154e8d,#071226 55%)}}h1{{font-size:clamp(30px,5vw,60px);margin:12px 0}}p{{color:#a9bdd2}}.tag{{color:#67e8f9;letter-spacing:2px}}main{{padding:28px 6%}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}}article{{background:#10253e;border:1px solid #244565;border-radius:18px;padding:22px}}article span{{color:#67e8f9;font-size:12px}}strong{{font-size:24px}}.notice{{padding:12px;border:1px solid #51718b;border-radius:12px}}nav a{{display:inline-block;padding:8px;margin:3px;color:#a5f3fc;border:1px solid #244565;border-radius:8px;text-decoration:none}}a:focus{{outline:2px solid #67e8f9}}</style></head><body><header><div class="tag">PARADIGMA ESFERA · GLOBAL</div><nav aria-label="Languages">{links}</nav><h1>{escape(t["headline"])}</h1><p>{escape(t["intro"])}</p><p class="notice">{escape(t["notice"])}</p></header><main><h2>{escape(t["catalog"])}</h2><div class="grid">{cards}</div><p>Version 1.2.0-dev · no checkout · no autonomous advertising</p></main></body></html>'''
 
@@ -236,3 +236,8 @@ def sales_campaign_draft(channel: str = "instagram", lang: str = "pt",
     if lang not in ("pt", "en", "es"):
         raise HTTPException(400, "Idioma não permitido")
     return sales_draft(channel, offer_id, campaign, lang)
+
+# Original ESFERA visual is the canonical homepage; legacy catalog remains at /catalogo.
+@app.get('/', response_class=HTMLResponse)
+def esfera_home():
+    return esfera_visual()
