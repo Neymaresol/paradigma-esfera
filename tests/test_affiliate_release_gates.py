@@ -9,10 +9,17 @@ def test_affiliate_default_fail_closed(monkeypatch):
     monkeypatch.delenv("ESFERA_AFFILIATE_PARTNER_VERIFIED", raising=False)
     assert client.get("/api/affiliate/readiness").json()["publication_allowed"] is False
     assert client.get("/ofertas/hotmart-inicial", follow_redirects=False).status_code == 503
+    assert "Ofertas em validação" in client.get("/ofertas").text
 
 def test_publish_flag_alone_is_insufficient(monkeypatch):
     monkeypatch.setenv("ESFERA_AFFILIATE_PUBLISH_ENABLED", "true")
     monkeypatch.delenv("ESFERA_AFFILIATE_PARTNER_VERIFIED", raising=False)
+    assert client.get("/ofertas/hotmart-inicial", follow_redirects=False).status_code == 503
+
+def test_partner_flag_alone_is_insufficient(monkeypatch):
+    monkeypatch.delenv("ESFERA_AFFILIATE_PUBLISH_ENABLED", raising=False)
+    monkeypatch.setenv("ESFERA_AFFILIATE_PARTNER_VERIFIED", "true")
+    assert client.get("/api/affiliate/readiness").json()["publication_allowed"] is False
     assert client.get("/ofertas/hotmart-inicial", follow_redirects=False).status_code == 503
 
 def test_both_flags_enable_redirect_but_not_financial_claims(monkeypatch):
