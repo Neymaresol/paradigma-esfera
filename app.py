@@ -1,11 +1,23 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Depends, Request
+from esfera_auth import require_operator
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+import os
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from uuid import uuid4
 from datetime import datetime, timezone
 from html import escape
 
-app = FastAPI(title='PARADIGMA ESFERA 1.0', version='1.3.0-dev')
+app = FastAPI(title='PARADIGMA ESFERA 1.0', version='1.3.1-dev', docs_url=None, redoc_url=None, openapi_url=None)
+@app.middleware('http')
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['Referrer-Policy'] = 'no-referrer'
+    response.headers['Cache-Control'] = 'no-store'
+    response.headers['Content-Security-Policy'] = "default-src 'self'; style-src 'unsafe-inline'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+    return response
 CATALOG = [
  {'id':'ia-basica','name':'IA no dia a dia','category':'Cursos','price_brl':9.90,'duration_min':30},
  {'id':'celular','name':'Celular e aplicativos','category':'Cursos','price_brl':9.90,'duration_min':30},
@@ -25,19 +37,19 @@ class SimulatedOrder(BaseModel):
     country: str = Field(default='BR', pattern='^(BR|PT|ES|US)$')
 @app.get('/health')
 def health():
-    return {'status':'ok','service':'paradigma-esfera','version':'1.3.0-dev','mode':'simulation','checkout_enabled':False,'live_ads_enabled':False,'auto_replication_enabled':False}
+    return {'status':'ok','service':'paradigma-esfera','version':'1.3.1-dev','mode':'simulation','checkout_enabled':False,'live_ads_enabled':False,'auto_replication_enabled':False}
 @app.get('/api/catalog')
 def catalog():
     return {'currency':'BRL','prices_are_suggested':True,'items':CATALOG}
 @app.post('/api/orders/simulate')
-def simulate(order:SimulatedOrder):
+def simulate(order:SimulatedOrder, actor: dict = Depends(require_operator)):
     item=next((p for p in CATALOG if p['id']==order.product_id),None)
     if not item: raise HTTPException(404,'Produto não encontrado')
     oid=str(uuid4()); data={'id':oid,'product_id':item['id'],'country':order.country,'status':'SIMULATED_ONLY','payment_confirmed':False,'commission_confirmed':False,'created_at':datetime.now(timezone.utc).isoformat()}
     ORDERS[oid]=data
     return data
 @app.get('/api/orders/{order_id}')
-def order_status(order_id:str):
+def order_status(order_id:str, actor: dict = Depends(require_operator)):
     if order_id not in ORDERS: raise HTTPException(404,'Pedido não encontrado')
     return ORDERS[order_id]
 I18N = {
@@ -80,7 +92,7 @@ class ExpansionRequest(BaseModel):
     proposed_children: int = Field(default=10, ge=1, le=10)
 
 @app.post('/api/expansion/evaluate')
-def evaluate_expansion(req: ExpansionRequest):
+def evaluate_expansion(req: ExpansionRequest, actor: dict = Depends(require_operator)):
     values = req.model_dump()
     proposed_children = values.pop('proposed_children')
     # Caller supplied values are NOT trusted evidence. Never allow provisioning from this endpoint.
@@ -90,7 +102,7 @@ def evaluate_expansion(req: ExpansionRequest):
     return result
 
 @app.get('/api/campaigns/drafts')
-def campaign_drafts(channel: str = 'facebook'):
+def campaign_drafts(channel: str = 'facebook', actor: dict = Depends(require_operator)):
     if channel not in ('facebook', 'instagram', 'tiktok', 'search'):
         raise HTTPException(400, 'Canal não permitido')
     return {'campaigns': [campaign_plan(p, channel) for p in CATALOG],
@@ -106,7 +118,7 @@ class ProposalRequest(BaseModel):
     rationale: str = Field(min_length=8, max_length=500)
 
 @app.post('/api/ops/proposals', status_code=201)
-def create_proposal(req: ProposalRequest):
+def create_proposal(req: ProposalRequest, actor: dict = Depends(require_operator)):
     if req.product_id not in {p['id'] for p in CATALOG}:
         raise HTTPException(404, 'Produto não encontrado')
     if req.kind not in ('CAMPAIGN', 'CELL_EXPANSION', 'INFRA_UPGRADE', 'COURSE'):
@@ -116,16 +128,16 @@ def create_proposal(req: ProposalRequest):
     return propose(req.kind, {'product_id': req.product_id, 'channel': req.channel, 'rationale': req.rationale})
 
 @app.get('/api/ops/proposals')
-def list_proposals():
+def list_proposals(actor: dict = Depends(require_operator)):
     return {'items': proposals(), 'external_actions_enabled': False}
 
 @app.get('/api/ops/audit')
-def list_audit():
+def list_audit(actor: dict = Depends(require_operator)):
     return {'items': audit(), 'external_actions_enabled': False}
 
 @app.get('/api/ops/dashboard')
-def ops_dashboard():
-    return {'service': 'paradigma-esfera', 'version': '1.3.0-dev',
+def ops_dashboard(actor: dict = Depends(require_operator)):
+    return {'service': 'paradigma-esfera', 'version': '1.3.1-dev',
             'operational_mode': 'LOCAL_STAGING_ONLY', 'catalog_offers': len(CATALOG),
             'pending_proposals': len(proposals()), 'simulated_orders_in_process': len(ORDERS),
             'verified_sales': None, 'verified_commissions_brl': None,
