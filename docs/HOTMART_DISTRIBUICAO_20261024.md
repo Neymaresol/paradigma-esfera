@@ -35,3 +35,27 @@ Explora cursos digitales y consulta el temario y las condiciones directamente en
 
 ## Critérios de liberação
 Autorização do parceiro; link validado; canal autenticado; conteúdo aprovado; política de privacidade e consentimento; métricas reais; monitoramento e rollback. Cada integração deve ter Double Check em staging antes de produção.
+
+
+## TAG 1 — Inteligência de demanda (fontes públicas/agregadas)
+- Consultar Google Trends, tendências de pesquisa disponíveis publicamente, ferramentas de palavras-chave e tendências públicas de redes sociais; obedecer aos termos e limites de APIs.
+- ChatGPT pode apoiar a interpretação, mas NÃO disponibiliza buscas privadas, conversas de terceiros ou perfil individual de usuários.
+- Normalizar cada oportunidade com: termo, categoria, idioma, país, fonte, janela temporal, data da coleta, relevância e nível de confiança.
+- Exigir confirmação cruzada em fontes independentes antes de priorizar um produto. Não fabricar volumes de busca ou atribuir comportamento individual.
+
+## TAG 2 — Distribuição contextual e afiliada
+- Cruzar a oportunidade TAG 1 com produtos Hotmart cuja afiliação, página e regras estejam validadas.
+- Gerar roteiros de vídeo, posts educativos, comparativos honestos e conteúdo estilo influenciador com identificação clara de publicidade.
+- Publicar somente por contas conectadas/autorizadas, respeitando revisão editorial, políticas de plataforma, consentimento e orçamento aprovado.
+- Medir impressões e cliques reais de campanhas; não usar rastreamento oculto, scraping de usuários, disparos não solicitados ou retargeting sem base legal.
+- Comissões e saldo: somente a Hotmart é fonte de verdade. Registrar pendente/aprovada/disponível/sacada/reembolsada sem inferir valores.
+
+## Gates de automação TAG1 → TAG2
+1. Fonte de tendências legítima, data recente e qualidade da evidência.
+2. Oferta aprovada e link de afiliado testado.
+3. Canal autenticado e regras de publicidade atendidas.
+4. Revisão humana ou política de publicação pré-aprovada por canal e orçamento.
+5. Logs, métricas verificáveis, limites de frequência e botão de pausa.
+6. Conciliação com dados oficiais Hotmart e rollback automático se houver incidente.
+
+Estado em 2026-10-24: especificação documentada; coletores de tendências, postagem automatizada e conciliação Hotmart ainda NÃO estão implementados nem ativos.
