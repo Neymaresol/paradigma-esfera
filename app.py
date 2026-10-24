@@ -158,9 +158,22 @@ AFFILIATE_OFFERS = {
     }
 }
 
+def affiliate_publication_allowed():
+    # Two independent release gates: publishing and partner authorization.
+    return (os.getenv("ESFERA_AFFILIATE_PUBLISH_ENABLED", "false").lower() == "true"
+            and os.getenv("ESFERA_AFFILIATE_PARTNER_VERIFIED", "false").lower() == "true")
+
+@app.get("/api/affiliate/readiness")
+def affiliate_readiness():
+    return {"publication_allowed": affiliate_publication_allowed(),
+            "partner_verified_flag": os.getenv("ESFERA_AFFILIATE_PARTNER_VERIFIED", "false").lower() == "true",
+            "attribution_verified": False,
+            "commissions_reconciled": False,
+            "financial_claims_allowed": False}
+
 @app.get("/ofertas", response_class=HTMLResponse)
 def affiliate_storefront():
-    enabled = os.getenv("ESFERA_AFFILIATE_PUBLISH_ENABLED", "false").lower() == "true"
+    enabled = affiliate_publication_allowed()
     if not enabled:
         return '<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ofertas ESFERA</title><body style="font:18px system-ui;background:#071226;color:white;padding:2rem"><h1>ESFERA · Ofertas</h1><p>Ofertas em validação. Nenhuma compra está habilitada nesta página.</p></body></html>'
     cards = ''.join(
@@ -171,7 +184,7 @@ def affiliate_storefront():
 
 @app.get("/ofertas/{offer_id}")
 def affiliate_outbound(offer_id: str):
-    if os.getenv("ESFERA_AFFILIATE_PUBLISH_ENABLED", "false").lower() != "true":
+    if not affiliate_publication_allowed():
         raise HTTPException(503, "Oferta ainda não autorizada para publicação")
     offer = AFFILIATE_OFFERS.get(offer_id)
     if not offer:
