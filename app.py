@@ -241,3 +241,11 @@ def sales_campaign_draft(channel: str = "instagram", lang: str = "pt",
 @app.get('/', response_class=HTMLResponse)
 def esfera_home():
     return esfera_visual()
+
+
+# Operator-only Hotmart diagnostic. No tokens, account data, or secrets in response.
+from hotmart_diagnostic import hotmart_diagnostic
+
+@app.post("/api/integrations/hotmart/diagnostic")
+def run_hotmart_diagnostic(actor: dict = Depends(require_operator)):
+    return hotmart_diagnostic()
