@@ -253,3 +253,6 @@ def run_hotmart_diagnostic(actor: dict = Depends(require_operator)):
 # Operator-initiated read-only Hotmart diagnostic page.
 from esfera_hotmart_admin import router as hotmart_admin_router
 app.include_router(hotmart_admin_router)
+
+from esfera_operator_login import router as operator_login_router
+app.include_router(operator_login_router)
