@@ -3,13 +3,13 @@ from app import app
 client=TestClient(app)
 def test_six_languages():
     for lang in ('pt','en','es','fr','de','ar'):
-        r=client.get('/',params={'lang':lang})
+        r=client.get('/catalogo',params={'lang':lang})
         assert r.status_code==200
         assert f'lang="{lang}"' in r.text
         assert 'no checkout' in r.text
 
 def test_bad_language():
-    assert client.get('/?lang=xx').status_code==400
+    assert client.get('/catalogo?lang=xx').status_code==400
 
 def test_readiness_closed():
     data=client.get('/api/readiness').json()
