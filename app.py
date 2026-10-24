@@ -202,7 +202,7 @@ def esfera_visual():
     return Path(__file__).with_name("esfera_prototipo.html").read_text(encoding="utf-8")
 
 
-# TAG 01/02 classification from Wero1Mercados. Attribution labels are unverified.
+# ESFERA-native TAG 01/02 channel classification. Attribution labels are unverified.
 from esfera_tags import classify_channel, tag_for_channel, safe_campaign, landing
 
 @app.get("/api/tags/channels")
