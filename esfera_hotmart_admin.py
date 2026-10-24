@@ -1,7 +1,7 @@
 """Read-only operator diagnostic page. No tokens in HTML or local storage."""
 from html import escape
 from fastapi import APIRouter
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 
 router = APIRouter()
 
@@ -20,7 +20,7 @@ Não cole credenciais Hotmart. O JWT permanece apenas na memória desta página.
 <label for="jwt">JWT de operador</label><input id="jwt" type="password" autocomplete="off">
 <p><button id="run" type="button">Testar autenticação Hotmart</button></p>
 <pre id="result" role="status" aria-live="polite">Nenhum teste realizado.</pre>
-<script>
+<script src="/admin/hotmart-diagnostic.js" defer></script>\n<!--
 document.getElementById('run').addEventListener('click', async () => {
  const field=document.getElementById('jwt'), token=field.value.trim(), out=document.getElementById('result');
  field.value='';
@@ -37,4 +37,24 @@ document.getElementById('run').addEventListener('click', async () => {
    out.textContent=allowed.map(k=>k+': '+String(data[k] ?? 'indisponível')).join('\\n');
  }catch(_){out.textContent='Não foi possível executar o diagnóstico.';}
 });
-</script></html>"""
+--></html>"""
+
+@router.get('/admin/hotmart-diagnostic.js')
+def diagnostic_js():
+    return Response(content=DIAGNOSTIC_JS,media_type='application/javascript',headers={'Cache-Control':'no-store'})
+
+DIAGNOSTIC_JS = '''
+document.getElementById('run').addEventListener('click', async () => {
+ const field=document.getElementById('jwt'), token=field.value.trim(), out=document.getElementById('result');
+ field.value='';
+ if(!token){out.textContent='JWT de operador obrigatório.';return;}
+ out.textContent='Verificando...';
+ try {
+  const response=await fetch('/api/integrations/hotmart/diagnostic',{method:'POST',headers:{Authorization:'Bearer '+token},cache:'no-store',credentials:'omit'});
+  if(!response.ok){out.textContent='Diagnóstico recusado (HTTP '+response.status+').';return;}
+  const data=await response.json();
+  const allowed=['status','credentials_present','staging_test_enabled','oauth_authenticated','affiliate_authorization_verified','catalog_synchronized','publication_enabled'];
+  out.textContent=allowed.map(k=>k+': '+String(data[k] ?? 'indisponível')).join('\\n');
+ }catch(_){out.textContent='Não foi possível executar o diagnóstico.';}
+});
+'''
