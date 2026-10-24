@@ -200,3 +200,26 @@ from pathlib import Path
 @app.get("/esfera", response_class=HTMLResponse)
 def esfera_visual():
     return Path(__file__).with_name("esfera_prototipo.html").read_text(encoding="utf-8")
+
+
+# TAG 01/02 classification from Wero1Mercados. Attribution labels are unverified.
+from esfera_tags import classify_channel, tag_for_channel, safe_campaign, landing
+
+@app.get("/api/tags/channels")
+def tags_channels():
+    return {"tag_01": ["google", "chatgpt", "bing", "organic"],
+            "tag_02": ["instagram", "facebook", "tiktok", "creator"],
+            "source_verification_enabled": False,
+            "trend_collection_enabled": False,
+            "publication_enabled": False,
+            "note": "Labels only; no private searches, automatic social posts or verified sales."}
+
+@app.get("/api/tags/preview")
+def tags_preview(channel: str = "direct", campaign: str = "", offer_id: str = "hotmart-inicial"):
+    if offer_id not in AFFILIATE_OFFERS:
+        raise HTTPException(404, "Oferta não encontrada")
+    channel = classify_channel(channel)
+    return {"channel": channel, "tag": tag_for_channel(channel),
+            "campaign": safe_campaign(campaign),
+            "internal_landing": landing(offer_id, channel, campaign),
+            "source_verified": False, "publication_allowed": affiliate_publication_allowed()}
