@@ -1,0 +1,23 @@
+name: Hotmart 50 Validation
+on:
+  pull_request:
+    paths:
+      - 'esfera_hotmart.py'
+      - 'migrations/**'
+      - 'tests/test_hotmart_import.py'
+      - '.github/workflows/hotmart-50-validation.yml'
+  workflow_dispatch:
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install requirements
+        run: python -m pip install -r requirements.txt
+      - name: Run validation tests
+        run: python -m pytest tests/test_hotmart_import.py -q
