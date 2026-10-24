@@ -37,3 +37,12 @@ def test_approval_requires_all_gates():
                publish_enabled=True)
     assert eligible_for_publication(row, False) is False
     assert eligible_for_publication(row, True) is True
+
+def test_importer_rejects_unmigrated_database(monkeypatch, tmp_path):
+    from esfera_hotmart_import import import_offers
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.setenv("ESFERA_ENV", "test")
+    monkeypatch.setenv("ESFERA_DB_PATH", str(tmp_path / "test.sqlite"))
+    # No table creation is allowed at import time: migration is an explicit gate.
+    with pytest.raises(Exception):
+        import_offers([offer(1)])
