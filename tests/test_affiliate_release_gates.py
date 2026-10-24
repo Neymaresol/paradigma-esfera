@@ -20,9 +20,9 @@ def test_both_flags_still_block_redirect_without_attribution(monkeypatch):
     monkeypatch.setenv("ESFERA_AFFILIATE_PARTNER_VERIFIED", "true")
     response = client.get("/ofertas/hotmart-inicial", follow_redirects=False)
     assert response.status_code == 503
-    assert response.headers["location"] == "https://go.hotmart.com/G108129576P"
+    assert "location" not in response.headers
     readiness = client.get("/api/affiliate/readiness").json()
-    assert readiness["publication_allowed"] is True
+    assert readiness["publication_allowed"] is False
     assert readiness["financial_claims_allowed"] is False
     assert readiness["attribution_verified"] is False
 
