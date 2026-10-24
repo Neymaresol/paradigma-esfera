@@ -160,8 +160,11 @@ AFFILIATE_OFFERS = {
 
 def affiliate_publication_allowed():
     # Two independent release gates: publishing and partner authorization.
+    # P0: explicit independent attribution evidence must be present before outbound links.
+    # Never treat the operator-controlled environment flags as proof of attribution.
     return (os.getenv("ESFERA_AFFILIATE_PUBLISH_ENABLED", "false").lower() == "true"
-            and os.getenv("ESFERA_AFFILIATE_PARTNER_VERIFIED", "false").lower() == "true")
+            and os.getenv("ESFERA_AFFILIATE_PARTNER_VERIFIED", "false").lower() == "true"
+            and False)  # Fail closed until server-verified attribution is implemented
 
 @app.get("/api/affiliate/readiness")
 def affiliate_readiness():
