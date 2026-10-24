@@ -193,3 +193,10 @@ def affiliate_outbound(offer_id: str):
     if not offer:
         raise HTTPException(404, "Oferta não encontrada")
     return RedirectResponse(url=offer["url"], status_code=302, headers={"Referrer-Policy": "no-referrer"})
+
+# Public, read-only visual prototype. No sales or autonomous actions.
+from pathlib import Path
+
+@app.get("/esfera", response_class=HTMLResponse)
+def esfera_visual():
+    return Path(__file__).with_name("esfera_prototipo.html").read_text(encoding="utf-8")
