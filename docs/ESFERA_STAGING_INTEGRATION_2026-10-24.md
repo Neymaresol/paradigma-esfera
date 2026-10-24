@@ -1,0 +1,5 @@
+# ESFERA staging integration — 2026-10-24
+Version timestamp: 2026-10-24 (Brasília), development.
+This PR introduces an authenticated-API-ready, PostgreSQL-only enqueue helper for REVIEW_REQUIRED tasks. It is intentionally disabled in production. No worker processing, external posting, affiliate click generation, sales or financial movements.
+Prerequisites: migrations 002 and 003 applied on isolated Neon branch; staging Render DATABASE_URL must be verified without revealing secrets; API must be wired to require_operator; audit writes must share a transaction in a later iteration. Existing direct Neon test data: 29 planned cells, 3 pending-review Hotmart offers, 4 review-only tasks. The staging Render service is not proven connected to that isolated Neon branch.
+P0: merge Hotmart importer PR #5; add authenticated endpoint; verify end-to-end staging API/DB; add task lease, retry, DLQ, heartbeat, rate limits, and safe worker handlers; validate official Hotmart permissions/attribution; perform canary and rollback review. Never enable commercial publication based only on tests.
