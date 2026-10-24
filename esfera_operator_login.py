@@ -7,11 +7,26 @@ import hashlib
 import hmac
 import os
 import time
+import threading
+from collections import defaultdict, deque
 import jwt
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
 router = APIRouter()
+_attempts = defaultdict(deque)
+_attempt_lock = threading.Lock()
+
+def _rate_limit(key, now):
+    # Per-instance defense in depth; enforce distributed rate limits at the edge too.
+    with _attempt_lock:
+        hits = _attempts[key]
+        while hits and hits[0] <= now - 900:
+            hits.popleft()
+        if len(hits) >= 5:
+            raise HTTPException(429, 'Too many attempts')
+        hits.append(now)
+
 class LoginRequest(BaseModel):
     password: str = Field(min_length=1, max_length=256)
 
@@ -20,6 +35,7 @@ def operator_login(body: LoginRequest, request: Request):
     # No public login in production. External rate limiting is REQUIRED before enabling.
     if os.getenv("RENDER_SERVICE_ID") != "srv-dbe16ejrjlhs738mgokg" or os.getenv("ESFERA_OPERATOR_LOGIN_ENABLED") != "true":
         raise HTTPException(403, "Operator login disabled")
+    _rate_limit(request.client.host if request.client else 'unknown', time.monotonic())
     secret = os.getenv("ESFERA_JWT_SECRET", "")
     verifier = os.getenv("ESFERA_OPERATOR_PASSWORD_SCRYPT", "")
     if len(secret) < 32 or not verifier:
