@@ -144,3 +144,36 @@ def ops_dashboard(actor: dict = Depends(require_operator)):
             'bank_balance_brl': None, 'financial_source_connected': False,
             'payments_enabled': False, 'posting_enabled': False, 'auto_replication_enabled': False,
             'infrastructure_auto_purchase_enabled': False}
+
+
+# Revenue-first affiliate storefront: disabled until partner authorization is verified.
+# No checkout, payment capture, click fabrication, or commission claim occurs here.
+from fastapi.responses import RedirectResponse
+
+AFFILIATE_OFFERS = {
+    "hotmart-inicial": {
+        "title": "Oferta digital na Hotmart",
+        "url": "https://go.hotmart.com/G108129576P",
+        "provider": "Hotmart",
+    }
+}
+
+@app.get("/ofertas", response_class=HTMLResponse)
+def affiliate_storefront():
+    enabled = os.getenv("ESFERA_AFFILIATE_PUBLISH_ENABLED", "false").lower() == "true"
+    if not enabled:
+        return '<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ofertas ESFERA</title><body style="font:18px system-ui;background:#071226;color:white;padding:2rem"><h1>ESFERA · Ofertas</h1><p>Ofertas em validação. Nenhuma compra está habilitada nesta página.</p></body></html>'
+    cards = ''.join(
+        f'<article><h2>{escape(o["title"])}</h2><p>Parceiro: {escape(o["provider"])}</p><p>Publicidade / link de afiliado: podemos receber comissão por compras elegíveis.</p><a href="/ofertas/{escape(k)}" rel="nofollow sponsored">Ver oferta na plataforma parceira</a></article>'
+        for k,o in AFFILIATE_OFFERS.items()
+    )
+    return f'<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ofertas ESFERA</title><body style="font:18px system-ui;background:#071226;color:white;padding:2rem"><h1>ESFERA · Ofertas autorizadas</h1>{cards}</body></html>'
+
+@app.get("/ofertas/{offer_id}")
+def affiliate_outbound(offer_id: str):
+    if os.getenv("ESFERA_AFFILIATE_PUBLISH_ENABLED", "false").lower() != "true":
+        raise HTTPException(503, "Oferta ainda não autorizada para publicação")
+    offer = AFFILIATE_OFFERS.get(offer_id)
+    if not offer:
+        raise HTTPException(404, "Oferta não encontrada")
+    return RedirectResponse(url=offer["url"], status_code=302, headers={"Referrer-Policy": "no-referrer"})
