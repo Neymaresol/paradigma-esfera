@@ -44,7 +44,9 @@ def test_success_with_injected_transport():
     assert request_access_token(ENV, opener=fake_open) == "access-test"
     assert len(calls) == 1
     assert calls[0][0].get_header("Authorization") == "Basic test-token"
-    assert b"grant_type=client_credentials" in calls[0][0].data
+    assert "grant_type=client_credentials" in calls[0][0].full_url
+    assert "client_id=test-id" in calls[0][0].full_url
+    assert calls[0][0].data == b""
 
 
 def test_errors_never_expose_credentials():
@@ -59,3 +61,11 @@ def test_errors_never_expose_credentials():
 def test_malformed_response_rejected():
     with pytest.raises(HotmartAuthError, match="missing access token"):
         request_access_token(ENV, opener=lambda req, timeout: Response({}))
+
+
+def test_raw_basic_token_is_accepted():
+    env = dict(ENV, HOTMART_CLIENT_TOKEN="test-token")
+    def fake_open(req, timeout):
+        assert req.get_header("Authorization") == "Basic test-token"
+        return Response({"access_token": "access-test"})
+    assert request_access_token(env, opener=fake_open) == "access-test"
