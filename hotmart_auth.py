@@ -46,7 +46,7 @@ def request_access_token(env=None, opener=None, timeout=10):
     try:
         with opener(req, timeout=timeout) as response:
             data = json.loads(response.read(32768))
-    except (error.HTTPError, error.URLError, TimeoutError, ValueError, OSError) from None:
+    except (error.HTTPError, error.URLError, TimeoutError, ValueError, OSError):
         raise HotmartAuthError("Hotmart OAuth request failed") from None
     if not isinstance(data, dict) or not isinstance(data.get("access_token"), str) or not data["access_token"]:
         raise HotmartAuthError("Hotmart OAuth response missing access token")
