@@ -7,14 +7,14 @@ def test_health_fail_closed():
     assert h['live_ads_enabled'] is False and h['auto_replication_enabled'] is False
 def test_catalog():
     assert len(client.get('/api/catalog').json()['items'])==10
-def test_simulated_order_not_real():
-    r=client.post('/api/orders/simulate',json={'product_id':'ia-basica'})
+def test_simulated_order_not_real(auth_headers):
+    r=client.post('/api/orders/simulate',json={'product_id':'ia-basica'},headers=auth_headers)
     assert r.status_code==200
     data=r.json()
     assert data['payment_confirmed'] is False and data['status']=='SIMULATED_ONLY'
-    assert client.get('/api/orders/'+data['id']).json()['commission_confirmed'] is False
-def test_invalid_product():
-    assert client.post('/api/orders/simulate',json={'product_id':'invalid'}).status_code==404
+    assert client.get('/api/orders/'+data['id'],headers=auth_headers).json()['commission_confirmed'] is False
+def test_invalid_product(auth_headers):
+    assert client.post('/api/orders/simulate',json={'product_id':'invalid'},headers=auth_headers).status_code==404
 def test_home():
     r=client.get('/')
     assert r.status_code==200 and 'PARADIGMA ESFERA' in r.text
