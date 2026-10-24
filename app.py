@@ -190,3 +190,23 @@ def affiliate_outbound(offer_id: str):
     if not offer:
         raise HTTPException(404, "Oferta não encontrada")
     return RedirectResponse(url=offer["url"], status_code=302, headers={"Referrer-Policy": "no-referrer"})
+
+# Hotmart 50 operator-controlled import. Never publishes or changes affiliate flags.
+from esfera_hotmart import validate_batch
+from esfera_hotmart_import import import_offers
+from pydantic import ValidationError
+
+class HotmartImportOffer(BaseModel):
+    slug: str
+    title: str
+    hotlink: str
+
+class HotmartImportBatch(BaseModel):
+    items: list[HotmartImportOffer] = Field(min_length=1, max_length=50)
+
+@app.post("/api/ops/hotmart/import", status_code=201)
+def hotmart_import(req: HotmartImportBatch, actor: dict = Depends(require_operator)):
+    try:
+        return import_offers([item.model_dump() for item in req.items])
+    except ValueError as exc:
+        raise HTTPException(422, str(exc))
