@@ -249,3 +249,7 @@ from hotmart_diagnostic import hotmart_diagnostic
 @app.post("/api/integrations/hotmart/diagnostic")
 def run_hotmart_diagnostic(actor: dict = Depends(require_operator)):
     return hotmart_diagnostic()
+
+# Operator-initiated read-only Hotmart diagnostic page.
+from esfera_hotmart_admin import router as hotmart_admin_router
+app.include_router(hotmart_admin_router)
