@@ -1,0 +1,56 @@
+{
+  "project": "PARADIGMA ESFERA",
+  "version": "1.0",
+  "status": "design_only",
+  "agents": [
+    {
+      "id": "central",
+      "role": "coordination"
+    },
+    {
+      "id": "frontend",
+      "role": "websites_accessibility"
+    },
+    {
+      "id": "backend",
+      "role": "api_integrations"
+    },
+    {
+      "id": "design",
+      "role": "visual_ux"
+    },
+    {
+      "id": "education",
+      "role": "course_curation"
+    },
+    {
+      "id": "werozinha",
+      "role": "visitor_guidance"
+    },
+    {
+      "id": "marketing",
+      "role": "seo_approved_campaigns"
+    },
+    {
+      "id": "commercial",
+      "role": "verified_metrics"
+    },
+    {
+      "id": "international",
+      "role": "localization"
+    },
+    {
+      "id": "security",
+      "role": "quality_and_release_gates"
+    }
+  ],
+  "publishing": {
+    "automatic": false,
+    "requires_authorization": true
+  },
+  "financial_actions": {
+    "automatic": false,
+    "requires_approval": true
+  },
+  "verified_sales_source": "partner_provider_only"
+}
