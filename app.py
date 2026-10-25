@@ -260,3 +260,8 @@ app.include_router(operator_login_router)
 # Search-first public discovery pages. Commercial offers remain gated.
 from esfera_discovery import router as discovery_router
 app.include_router(discovery_router)
+
+# AJAX-003 preview: swipe-first responsive storefront, commercial links remain gated.
+@app.get("/ajax", response_class=HTMLResponse)
+def esfera_ajax_mobile():
+    return Path(__file__).with_name("esfera_ajax_mobile.html").read_text(encoding="utf-8")
