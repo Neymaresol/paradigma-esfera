@@ -240,7 +240,18 @@ def sales_campaign_draft(channel: str = "instagram", lang: str = "pt",
 # Original ESFERA visual is the canonical homepage; legacy catalog remains at /catalogo.
 @app.get('/', response_class=HTMLResponse)
 def esfera_home():
-    return esfera_visual()
+    return werozinha_home()
+
+@app.get('/werozinha', response_class=HTMLResponse)
+def werozinha_home():
+    """Public interactive preview. Commerce remains gated by provider verification."""
+    import hashlib, base64, re
+    from fastapi import Response
+    html = (Path(__file__).resolve().parent / 'prototypes' / 'werozinha-idle-v1.html').read_text(encoding='utf-8')
+    scripts = re.findall(r'<script(?:\\s[^>]*)?>(.*?)</script>', html, flags=re.DOTALL | re.IGNORECASE)
+    hashes = ['sha256-' + base64.b64encode(hashlib.sha256(js.encode('utf-8')).digest()).decode('ascii') for js in scripts]
+    policy = "default-src 'self'; script-src 'self' " + ' '.join("'" + h + "'" for h in hashes) + "; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+    return Response(content=html, media_type='text/html; charset=utf-8', headers={'Content-Security-Policy': policy})
 
 
 # Operator-only Hotmart diagnostic. No tokens, account data, or secrets in response.
