@@ -9,6 +9,7 @@ from urllib.parse import quote
 from fastapi import APIRouter, Query
 from fastapi.responses import HTMLResponse
 
+from esfera_ai_routing import classify
 router = APIRouter()
 TOPICS = [
     {"slug":"inteligencia-artificial","title":"Inteligência Artificial","keywords":["ia","inteligencia artificial","automacao","chatbot","tecnologia"],"summary":"Descubra temas e formações em inteligência artificial e automação."},
@@ -29,12 +30,19 @@ def shell(title,description,body):
 @router.get("/api/discovery/topics")
 def topics(q: str=Query("",max_length=120)):
     return {"query":q,"results":[{"slug":t["slug"],"title":t["title"],"summary":t["summary"],"url":"/interesses/"+t["slug"]} for t in TOPICS if matches(q,t)],"commerce_status":"no_verified_offers"}
+@router.get("/api/discovery/route")
+def route_search(q: str=Query("",max_length=120)):
+    return classify(q)
+
 @router.get("/descobrir",response_class=HTMLResponse)
 def discover(q: str=Query("",max_length=120)):
+    intent=classify(q)
     results=[t for t in TOPICS if matches(q,t)]
     cards="".join('<article><h2>'+escape(t["title"])+'</h2><p>'+escape(t["summary"])+'</p><a href="/interesses/'+t["slug"]+'">Explorar tema ↗</a></article>' for t in results)
     if not cards:cards="<p>Nenhum tema encontrado. Experimente outra palavra-chave.</p>"
     body='<small>EDUCAÇÃO · TECNOLOGIA · OPORTUNIDADES</small><h1>O que você quer aprender hoje?</h1><p>Pesquise por assunto e encontre uma trilha de conhecimento.</p><form action="/descobrir" method="get"><input name="q" maxlength="120" aria-label="Pesquisar interesses" placeholder="Ex.: inteligência artificial" value="'+escape(q,quote=True)+'"><button type="submit">Pesquisar</button></form><div class="grid">'+cards+'</div><p class="note">Conteúdo informativo. Ofertas e pagamentos só serão apresentados após autorização e verificação dos parceiros.</p>'
+    front_names={"educacao":"Educação","servicos":"Serviços","comercio":"Comércio","expansao":"Expansão"}
+    body += "<section><h2>Tema pesquisado: "+escape(q or "Todos os temas")+"</h2><p>Motor: "+escape(intent["engine"])+"</p><div class=\"grid\">"+"".join("<article><h3>"+front_names[f]+"</h3><p>Ofertas comerciais dependem de autorização e verificação.</p></article>" for f in intent["fronts"])+"</div></section>"
     return shell("Descubra seus interesses","Explore temas de educação, tecnologia e carreira.",body)
 @router.get("/interesses/{slug}",response_class=HTMLResponse)
 def interest(slug:str):
