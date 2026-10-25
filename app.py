@@ -16,7 +16,7 @@ async def security_headers(request: Request, call_next):
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['Referrer-Policy'] = 'no-referrer'
     response.headers['Cache-Control'] = 'no-store'
-    response.headers['Content-Security-Policy'] = "default-src 'self'; style-src 'unsafe-inline'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+    response.headers.setdefault('Content-Security-Policy', "default-src 'self'; style-src 'unsafe-inline'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'")
     return response
 CATALOG = [
  {'id':'ia-basica','name':'IA no dia a dia','category':'Cursos','price_brl':9.90,'duration_min':30},
