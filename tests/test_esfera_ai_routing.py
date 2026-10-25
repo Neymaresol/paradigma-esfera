@@ -20,3 +20,15 @@ def test_page_displays_theme(monkeypatch):
     response=discover("Inteligência Artificial")
     assert "Tema pesquisado: Inteligência Artificial" in response
     assert "Educação" in response
+
+def test_english_course_search(monkeypatch):
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    page=discover("Curso de inglês")
+    assert "Curso de Inglês" in page
+    assert "Nenhum tema encontrado" not in page
+
+def test_unknown_topic_has_helpful_fallback(monkeypatch):
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    page=discover("Curso de fotografia")
+    assert "Busca por: Curso de fotografia" in page
+    assert "Nenhum tema encontrado" not in page
