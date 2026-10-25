@@ -20,3 +20,17 @@ Interface mobile futurista azul-marinho e dourado, inspirada em padrões de desc
 - AJAX-001 — 2026-10-25 — Especificação oficial do tema e template mobile aprovado pelo usuário. Sem deploy implícito.
 
 Atualizar esta seção em cada nova versão com data, hora, commit, ambiente e resultado de testes.
+
+## Regra arquitetural permanente — atualização de cursos sem deploy
+- **Front estável:** tema visual aprovado, Werozinha oficial, busca textual, descoberta visual e trilhos de cartões AJAX permanecem desacoplados dos registros comerciais.
+- **Fonte de verdade:** catálogo persistente de produtos afiliados no banco efetivo de produção, com ID de parceiro+produto, título, categoria, imagens autorizadas, idioma, URL oficial, autorização, verificação de atribuição, disponibilidade, timestamps e trilha de auditoria.
+- **Ingestão:** worker agendado, webhook autenticado quando disponível ou importação autorizada; não presumir que a Hotmart ofereça endpoint de descoberta/afiliação com as permissões necessárias. Fazer paginação, retries com backoff, deduplicação, atualização e desativação de ofertas revogadas.
+- **Publicação segura:** somente ofertas com evidência válida de autorização e atribuição; links não verificados ficam em quarentena e nunca são publicados. Revalidar expiração e revogação.
+- **API de leitura:** /api/catalog/groups, /api/catalog/search?q= e /api/catalog/featured com paginação, ETag/cache curto e versão de dados; o front consome via fetch e atualiza cartões sem reload. Endpoints são contrato planejado, não presumir implementação.
+- **Werozinha:** busca escrita e recomendações utilizam exatamente a mesma API de catálogo que as vitrines visuais; IA classifica intenção e não inventa produtos, preços, avaliações ou comissões.
+- **Observabilidade:** registrar último sync, itens recebidos, aceitos, rejeitados, desativados, erros e saúde. Separar versão do código (AJAX-NNN) da revisão do catálogo (catalog_revision, sync_at).
+- **Controle de mudança:** inserir/editar cursos autorizados não exige deploy; alterar schema, front, integração ou regras de negócio exige testes, staging, double check, canary e rollback.
+
+## Evolução do registro
+- AJAX-006 — 2026-10-25 — Código de busca visual e escrita unificado na branch, commit 3d26f054f457; testes e produção não confirmados.
+- AJAX-007 — 2026-10-25 (horário exato não aferido) — Contrato arquitetural para catálogo dinâmico desacoplado de deploy; documentação somente, sem ativação do sincronizador.
