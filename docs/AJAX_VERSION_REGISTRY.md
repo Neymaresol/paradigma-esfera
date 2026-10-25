@@ -34,3 +34,13 @@ Atualizar esta seção em cada nova versão com data, hora, commit, ambiente e r
 ## Evolução do registro
 - AJAX-006 — 2026-10-25 — Código de busca visual e escrita unificado na branch, commit 3d26f054f457; testes e produção não confirmados.
 - AJAX-007 — 2026-10-25 (horário exato não aferido) — Contrato arquitetural para catálogo dinâmico desacoplado de deploy; documentação somente, sem ativação do sincronizador.
+
+## AJAX-008 — Release candidate e relatório de promoção
+- **Data:** 2026-10-25; **horário de verificação:** não aferido com precisão.
+- **Produção Render:** LIVE, commit 08328c7567e884a1c32617e9295d65dd1dd3d752 (PR #34); não contém necessariamente o AJAX-007.
+- **Staging Render:** LIVE, commit 2980ef35221ca020eb07d27f448ef27e9f08a028 (PR #35); ainda não executa esta branch AJAX.
+- **Branch de desenvolvimento:** feat/esfera-openai-intent-routing-20261024; AJAX-006 código commit 3d26f054f457, AJAX-007 especificação commit f243c13d3f22520475bdf9f8013d96fafdce83b9.
+- **P0 security checks:** success no commit f243c13d3f22520475bdf9f8013d96fafdce83b9; não substitui testes HTTP, mobile, catálogo e integração.
+- **Bloqueios GO LIVE comercial:** identidade oficial Werozinha ainda não integrada como mídia animada real; sync e banco de catálogo persistente não implementados; fonte autorizada Hotmart e atribuição não verificadas; fluxo comercial permanece fail-closed.
+- **Gate de promoção:** resolver divergências de branch, testes de regressão e responsividade, deploy staging com health e testes reais; somente então promover main, canary/health e rollback.
+- **Status:** documentação release candidate; NÃO implantado e NÃO liberado para vendas.
