@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-10-24",
+  "source": "User-provided Hotmart links recovered from conversation; affiliate authorization and link destination not independently verified",
+  "publication_allowed": false,
+  "offers": [
+    {
+      "id": "hotmart-g108129576p",
+      "url": "https://go.hotmart.com/G108129576P",
+      "product_name": "Não confirmado — associação histórica divergente"
+    },
+    {
+      "id": "hotmart-a107958015j",
+      "url": "https://go.hotmart.com/A107958015J",
+      "product_name": "Leadlovers (associação histórica; validar)"
+    },
+    {
+      "id": "hotmart-o107910953y",
+      "url": "https://go.hotmart.com/O107910953Y",
+      "product_name": "A confirmar"
+    },
+    {
+      "id": "hotmart-j107828590u",
+      "url": "https://go.hotmart.com/J107828590U",
+      "product_name": "Viva Sempre com Dinheiro (associação histórica; validar)"
+    }
+  ]
+}
