@@ -256,3 +256,7 @@ app.include_router(hotmart_admin_router)
 
 from esfera_operator_login import router as operator_login_router
 app.include_router(operator_login_router)
+
+# Public installable web-app and search discovery routes.
+from esfera_global_pwa import router as global_pwa_router
+app.include_router(global_pwa_router)
