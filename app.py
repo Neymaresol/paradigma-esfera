@@ -150,13 +150,30 @@ def ops_dashboard(actor: dict = Depends(require_operator)):
 # No checkout, payment capture, click fabrication, or commission claim occurs here.
 from fastapi.responses import RedirectResponse
 
-AFFILIATE_OFFERS = {
-    "hotmart-inicial": {
-        "title": "Oferta digital na Hotmart",
-        "url": "https://go.hotmart.com/G108129576P",
-        "provider": "Hotmart",
-    }
-}
+from pathlib import Path
+# Centralized, versioned Hotmart inventory. Records are NOT proof of authorization.
+import json
+from urllib.parse import urlparse
+
+def load_affiliate_offers():
+    registry = Path(__file__).with_name("data") / "hotmart_affiliate_links_recovered.json"
+    data = json.loads(registry.read_text(encoding="utf-8"))
+    offers = {}
+    for item in data["offers"]:
+        url = item["url"]
+        parsed = urlparse(url)
+        if parsed.scheme != "https" or parsed.hostname != "go.hotmart.com":
+            raise ValueError("Invalid Hotmart affiliate URL in registry")
+        offers[item["id"]] = {
+            "title": item.get("product_name") or "Oferta Hotmart em validação",
+            "url": url,
+            "provider": "Hotmart",
+        }
+    if len(offers) != len(data["offers"]):
+        raise ValueError("Duplicate Hotmart affiliate ID")
+    return offers
+
+AFFILIATE_OFFERS = load_affiliate_offers()
 
 def affiliate_publication_allowed():
     # Two independent release gates: publishing and partner authorization.
