@@ -256,3 +256,7 @@ app.include_router(hotmart_admin_router)
 
 from esfera_operator_login import router as operator_login_router
 app.include_router(operator_login_router)
+
+# Search-first public discovery pages. Commercial offers remain gated.
+from esfera_discovery import router as discovery_router
+app.include_router(discovery_router)
