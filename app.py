@@ -276,3 +276,8 @@ app.include_router(discovery_router)
 @app.get("/ajax", response_class=HTMLResponse)
 def esfera_ajax_mobile():
     return Path(__file__).with_name("esfera_ajax_mobile.html").read_text(encoding="utf-8")
+
+# Preview of the approved visual, separate from production homepage until assets and tests pass.
+@app.get('/visual-oficial', response_class=HTMLResponse)
+def esfera_visual_oficial():
+    return Path(__file__).with_name('esfera_visual_official.html').read_text(encoding='utf-8')
