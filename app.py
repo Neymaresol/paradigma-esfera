@@ -3,6 +3,7 @@ from esfera_auth import require_operator
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 import os
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from uuid import uuid4
 from datetime import datetime, timezone
@@ -276,3 +277,13 @@ app.include_router(discovery_router)
 @app.get("/ajax", response_class=HTMLResponse)
 def esfera_ajax_mobile():
     return Path(__file__).with_name("esfera_ajax_mobile.html").read_text(encoding="utf-8")
+
+# Preview of the approved visual, separate from production homepage until assets and tests pass.
+@app.get('/visual-oficial', response_class=HTMLResponse)
+def esfera_visual_oficial():
+    return Path(__file__).with_name('esfera_visual_official.html').read_text(encoding='utf-8')
+
+# Official visual assets are served only when present in the deployment package.
+from pathlib import Path as _EsferaPath
+if (_EsferaPath(__file__).parent / 'assets').is_dir():
+    app.mount('/assets', StaticFiles(directory=str(_EsferaPath(__file__).parent / 'assets')), name='esfera-assets')
