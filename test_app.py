@@ -17,4 +17,7 @@ def test_invalid_product(auth_headers):
     assert client.post('/api/orders/simulate',json={'product_id':'invalid'},headers=auth_headers).status_code==404
 def test_home():
     r=client.get('/')
-    assert r.status_code==200 and 'PARADIGMA ESFERA' in r.text
+    assert r.status_code == 200
+    assert 'Werozinha' in r.text
+    assert 'suggestions' in r.text
+    assert 'sha256-' in r.headers['content-security-policy']
