@@ -260,3 +260,9 @@ app.include_router(operator_login_router)
 # Search-first public discovery pages. Commercial offers remain gated.
 from esfera_discovery import router as discovery_router
 app.include_router(discovery_router)
+
+
+# Werozinha interactive prototype; accessible separately until QA passes.
+@app.get("/werozinha", response_class=HTMLResponse)
+def werozinha_preview():
+    return (Path(__file__).resolve().parent / "prototypes" / "werozinha-idle-v1.html").read_text(encoding="utf-8")
