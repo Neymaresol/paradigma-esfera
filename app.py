@@ -241,7 +241,7 @@ def sales_campaign_draft(channel: str = "instagram", lang: str = "pt",
 # Original ESFERA visual is the canonical homepage; legacy catalog remains at /catalogo.
 @app.get('/', response_class=HTMLResponse)
 def esfera_home():
-    return werozinha_home()
+    return esfera_visual_oficial()
 
 @app.get('/werozinha', response_class=HTMLResponse)
 def werozinha_home():
