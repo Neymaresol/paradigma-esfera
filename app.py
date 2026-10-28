@@ -291,3 +291,7 @@ if (_EsferaPath(__file__).parent / 'assets').is_dir():
 # Read-only partner integration diagnostics. No checkout or redirects.
 from esfera_partner_api import router as partner_api_router
 app.include_router(partner_api_router)
+
+# ESFERA SMART Radar — read-only, fail-closed staging foundation.
+from esfera_radar import router as radar_router
+app.include_router(radar_router)
