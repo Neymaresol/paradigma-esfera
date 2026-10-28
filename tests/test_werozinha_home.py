@@ -8,7 +8,10 @@ def test_home_renders_werozinha_and_search():
     assert response.status_code == 200
     assert 'Werozinha' in response.text
     assert 'suggestions' in response.text
-    assert 'Próximo gesto' in response.text
+    assert '/assets/werozinha-assistente-oficial.webp' in response.text
+    assert 'id="eventos"' in response.text
+    assert 'id="affiliate-rail"' in response.text
+    assert 'Próximo gesto' not in response.text
     assert 'script-src' in response.headers['content-security-policy']
     assert 'sha256-' in response.headers['content-security-policy']
 
