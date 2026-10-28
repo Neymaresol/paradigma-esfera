@@ -287,3 +287,7 @@ def esfera_visual_oficial():
 from pathlib import Path as _EsferaPath
 if (_EsferaPath(__file__).parent / 'assets').is_dir():
     app.mount('/assets', StaticFiles(directory=str(_EsferaPath(__file__).parent / 'assets')), name='esfera-assets')
+
+# Read-only partner integration diagnostics. No checkout or redirects.
+from esfera_partner_api import router as partner_api_router
+app.include_router(partner_api_router)
