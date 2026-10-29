@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Query, Depends, Request
 from esfera_auth import require_operator
+from affiliate_catalog import router as affiliate_catalog_router
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 import os
 from fastapi.responses import HTMLResponse
@@ -10,6 +11,7 @@ from datetime import datetime, timezone
 from html import escape
 
 app = FastAPI(title='PARADIGMA ESFERA 1.0', version='1.3.1-dev', docs_url=None, redoc_url=None, openapi_url=None)
+app.include_router(affiliate_catalog_router)
 @app.middleware('http')
 async def security_headers(request: Request, call_next):
     response = await call_next(request)
