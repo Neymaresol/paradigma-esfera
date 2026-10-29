@@ -19,7 +19,7 @@ def test_preview_keeps_core_controls():
     html = PAGE.read_text(encoding="utf-8")
     inspector = Inspector()
     inspector.feed(html)
-    assert {"filters", "agenda-rail", "offer-rail", "partner-list", "wero-img", "question", "ask", "reply"}.issubset(inspector.ids)
+    assert {"filters", "agenda-rail", "offer-rail", "affiliate-rail", "wero-img", "question", "ask", "reply"}.issubset(inspector.ids)
     assert 'data-scroll="agenda-rail"' in html
     assert 'data-scroll="offer-rail"' in html
     assert "scrollBy(" in html
