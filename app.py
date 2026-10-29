@@ -296,4 +296,11 @@ app.include_router(partner_api_router)
 # Staging-only preview; no partner redirects, ad publication or payments.
 @app.get("/agenda-ia-preview", response_class=HTMLResponse)
 def agenda_ia_preview():
-    return (Path(__file__).resolve().parent / "prototypes" / "esfera-agenda-ia-v1.html").read_text(encoding="utf-8")
+    """Staging preview with exact CSP hashes for its inline scripts."""
+    import hashlib, base64, re
+    from fastapi import Response
+    html = (Path(__file__).resolve().parent / "prototypes" / "esfera-agenda-ia-v1.html").read_text(encoding="utf-8")
+    scripts = re.findall(r'<script(?:\\s[^>]*)?>(.*?)</script>', html, flags=re.DOTALL | re.IGNORECASE)
+    hashes = ["'sha256-" + base64.b64encode(hashlib.sha256(js.encode("utf-8")).digest()).decode("ascii") + "'" for js in scripts]
+    policy = "default-src 'self'; script-src 'self' " + " ".join(hashes) + "; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+    return Response(content=html, media_type="text/html; charset=utf-8", headers={"Content-Security-Policy": policy})
