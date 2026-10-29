@@ -32,15 +32,14 @@ def shell(title,description,body):
 
 # Search and partner offers share one verified catalog. Unverified links are never rendered.
 def verified_offers_for(query):
-    from app import AFFILIATE_OFFERS, affiliate_publication_allowed
-    if not affiliate_publication_allowed():
-        return []
+    from app import AFFILIATE_OFFERS, affiliate_offer_allowed
+    
     words=[w for w in re.findall(r"[\\w]+",norm(query)) if w not in {"curso","cursos","de","da","do","para","quero","aprender"}]
     if not words:
         return []
     return [{"id":key,"title":offer["title"],"provider":offer["provider"],"url":"/ofertas/"+key}
             for key,offer in AFFILIATE_OFFERS.items()
-            if all(w in norm(offer["title"]) for w in words)]
+            if affiliate_offer_allowed(key) and all(w in norm(offer["title"]) for w in words)]
 
 @router.get("/api/discovery/offers")
 def discovery_offers(q: str=Query("",max_length=120)):
