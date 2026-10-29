@@ -135,4 +135,24 @@ input.addEventListener('keydown',e=>{if(e.key==='Escape')list.hidden=true});
 }
 attach('question','suggestions');attach('global-q','global-suggestions');
 })();
+</script><script>
+/* ESFERA affiliate click telemetry (staging): anonymous, best-effort, no cookies. */
+(function(){
+  const partners=[
+    ['hotmart','go.hotmart.com'],
+    ['amazon','www.amazon.com.br'],
+    ['shopee','s.shopee.com.br'],
+    ['mercadolivre','meli.la'],
+    ['magalu','www.magazinevoce.com.br']
+  ];
+  document.addEventListener('click',function(event){
+    const anchor=event.target.closest('a[href]');
+    if(!anchor)return;
+    let url;try{url=new URL(anchor.href)}catch{return}
+    const partner=partners.find(([name,host])=>url.hostname===host);
+    if(!partner)return;
+    const payload=JSON.stringify({partner:partner[0],destination_host:url.hostname,offer_code:partner[0]==='hotmart'?url.pathname.slice(1):null,page:'esfera-home'});
+    try{navigator.sendBeacon('/api/analytics/affiliate-click',new Blob([payload],{type:'application/json'}))}catch{}
+  },{capture:true});
+})();
 </script></body></html>
