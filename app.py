@@ -220,6 +220,37 @@ def affiliate_readiness():
             "commissions_reconciled": False,
             "financial_claims_allowed": False}
 
+@app.get("/api/affiliate/diagnostics")
+def affiliate_diagnostics():
+    """Non-sensitive explanation of every offer's actual release blockers."""
+    publication = affiliate_publication_allowed()
+    return {
+        "service": "paradigma-esfera",
+        "publication_gate": publication,
+        "offers": [
+            {
+                "id": offer_id,
+                "partner": offer["provider"],
+                "destination_configured": bool(offer.get("url")),
+                "evidence_registered": offer_id in AFFILIATE_VERIFIED_EVIDENCE,
+                "partner_evidence_eligible": bool(
+                    AFFILIATE_VERIFIED_EVIDENCE.get(offer_id)
+                    and partner_evidence_eligible(AFFILIATE_VERIFIED_EVIDENCE[offer_id])
+                ),
+                "redirect_enabled": affiliate_offer_allowed(offer_id),
+                "blockers": (
+                    ([] if offer.get("url") else ["missing_destination"])
+                    + ([] if publication else ["publication_gate_closed"])
+                    + ([] if offer_id in AFFILIATE_VERIFIED_EVIDENCE
+                        and partner_evidence_eligible(AFFILIATE_VERIFIED_EVIDENCE[offer_id])
+                        else ["missing_verified_partner_evidence"])
+                ),
+            }
+            for offer_id, offer in AFFILIATE_OFFERS.items()
+        ],
+        "note": "Diagnostic only; does not activate sales or establish attribution.",
+    }
+
 @app.get("/api/affiliate/offers/status")
 def affiliate_offers_status():
     """Public read-only status; configured URLs are not proof of partner authorization."""
