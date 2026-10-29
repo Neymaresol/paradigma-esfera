@@ -29,11 +29,12 @@ def test_preview_is_fail_closed_and_labels_examples():
     html = PAGE.read_text(encoding="utf-8")
     assert "eventos ilustrativos" in html
     assert "Links comerciais só serão habilitados" in html
-    assert "Sem divulgação automática" in html
-    assert "https://go.hotmart.com/" not in html
-    assert "https://s.shopee.com.br/" not in html
+    assert "atribuição não verificada" in html
+    assert "https://go.hotmart.com/G108129576P" in html
+    assert "https://s.shopee.com.br/8fTUIY2010" in html
+    assert 'rel="noopener noreferrer sponsored"' in html
 
 def test_official_asset_path_is_retained():
     inspector = Inspector()
     inspector.feed(PAGE.read_text(encoding="utf-8"))
-    assert any(i.get("src") == "/assets/werozinha-assistente-oficial.webp" for i in inspector.images)
+    assert any(i.get("id") == "wero-img" and i.get("alt") == "Werozinha oficial da ESFERA" and i.get("src", "").startswith("https://raw.githubusercontent.com/Neymaresol/paradigma-esfera/main/assets/") for i in inspector.images)
