@@ -157,10 +157,28 @@ from fastapi.responses import RedirectResponse
 
 AFFILIATE_OFFERS = {
     "hotmart-inicial": {
-        "title": "Curso digital na Hotmart",
+        "title": "Especialista em Degradê — Faby Cardoso",
         "provider": "Hotmart",
         "url": "https://go.hotmart.com/G108129576P",
-        "description": "Nome do curso pendente de confirmação pelo parceiro."
+        "description": "Curso de manicure e unhas decoradas em degradê; confira os detalhes com o parceiro."
+    },
+    "hotmart-curso-2": {
+        "title": "Curso Lembrancinhas e Flores em E.V.A.",
+        "provider": "Hotmart",
+        "url": "https://go.hotmart.com/A107958015J",
+        "description": "Artesanato, moldes e videoaulas; confira os detalhes com o parceiro."
+    },
+    "hotmart-curso-3": {
+        "title": "Curso Hotmart 3",
+        "provider": "Hotmart",
+        "url": "https://go.hotmart.com/O107910953Y",
+        "description": "Nome e conteúdo a confirmar na página oficial do parceiro."
+    },
+    "hotmart-curso-4": {
+        "title": "Curso Hotmart 4",
+        "provider": "Hotmart",
+        "url": "https://go.hotmart.com/J107828590U",
+        "description": "Nome e conteúdo a confirmar na página oficial do parceiro."
     },
     "shopee-inicial": {
         "title": "Produtos na Shopee",
@@ -177,14 +195,14 @@ AFFILIATE_OFFERS = {
     "amazon-inicial": {
         "title": "Produtos Amazon Brasil",
         "provider": "Amazon Brasil",
-        "url": "",
-        "description": "Link de destino ainda não cadastrado."
+        "url": "https://www.amazon.com.br?linkCode=ll2&tag=esferaparadigma2026-20&linkId=d15484cf0f7d373c26ce657759d36c72&ref_=as_li_ss_tl",
+        "description": "Loja Amazon Brasil; seleção de produtos ainda não verificada."
     },
     "magalu-inicial": {
         "title": "Produtos Magalu",
         "provider": "Magalu",
-        "url": "",
-        "description": "Link de destino ainda não cadastrado."
+        "url": "https://www.magazinevoce.com.br/magazinein_614184/",
+        "description": "Loja Magalu; seleção de produtos ainda não verificada."
     }
 }
 

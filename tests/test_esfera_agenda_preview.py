@@ -31,6 +31,9 @@ def test_preview_is_fail_closed_and_labels_examples():
     assert "Links comerciais só serão habilitados" in html
     assert "atribuição não verificada" in html
     assert 'href="/ofertas/item/hotmart-inicial"' in html
+    assert 'href="/ofertas/item/hotmart-curso-2"' in html
+    assert 'href="/ofertas/item/hotmart-curso-3"' in html
+    assert 'href="/ofertas/item/hotmart-curso-4"' in html
     assert 'href="/ofertas/item/shopee-inicial"' in html
     assert 'href="/ofertas/item/mercadolivre-inicial"' in html
     assert 'href="/ofertas/item/amazon-inicial"' in html
