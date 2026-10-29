@@ -169,13 +169,13 @@ def affiliate_publication_allowed():
     # Never treat the operator-controlled environment flags as proof of attribution.
     return (os.getenv("ESFERA_AFFILIATE_PUBLISH_ENABLED", "false").lower() == "true"
             and os.getenv("ESFERA_AFFILIATE_PARTNER_VERIFIED", "false").lower() == "true"
-            and False)  # Fail closed until server-verified attribution is implemented
+            and os.getenv("ESFERA_AFFILIATE_ATTRIBUTION_EVIDENCE_VERIFIED", "false").lower() == "true")
 
 @app.get("/api/affiliate/readiness")
 def affiliate_readiness():
     return {"publication_allowed": affiliate_publication_allowed(),
             "partner_verified_flag": os.getenv("ESFERA_AFFILIATE_PARTNER_VERIFIED", "false").lower() == "true",
-            "attribution_verified": False,
+            "attribution_verified": os.getenv("ESFERA_AFFILIATE_ATTRIBUTION_EVIDENCE_VERIFIED", "false").lower() == "true",
             "commissions_reconciled": False,
             "financial_claims_allowed": False}
 
