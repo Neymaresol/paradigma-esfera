@@ -157,9 +157,34 @@ from fastapi.responses import RedirectResponse
 
 AFFILIATE_OFFERS = {
     "hotmart-inicial": {
-        "title": "Oferta digital na Hotmart",
-        "url": "https://go.hotmart.com/G108129576P",
+        "title": "Curso digital na Hotmart",
         "provider": "Hotmart",
+        "url": "https://go.hotmart.com/G108129576P",
+        "description": "Nome do curso pendente de confirmação pelo parceiro."
+    },
+    "shopee-inicial": {
+        "title": "Produtos na Shopee",
+        "provider": "Shopee",
+        "url": "https://s.shopee.com.br/8fTUIY2010",
+        "description": "Produtos do parceiro; seleção ainda não validada."
+    },
+    "mercadolivre-inicial": {
+        "title": "Produtos no Mercado Livre",
+        "provider": "Mercado Livre",
+        "url": "https://meli.la/2AReAP7",
+        "description": "Produtos do parceiro; seleção ainda não validada."
+    },
+    "amazon-inicial": {
+        "title": "Produtos Amazon Brasil",
+        "provider": "Amazon Brasil",
+        "url": "",
+        "description": "Link de destino ainda não cadastrado."
+    },
+    "magalu-inicial": {
+        "title": "Produtos Magalu",
+        "provider": "Magalu",
+        "url": "",
+        "description": "Link de destino ainda não cadastrado."
     }
 }
 
@@ -186,9 +211,10 @@ def affiliate_storefront():
         '<article style="background:#13233d;border:1px solid #2c466b;border-radius:14px;padding:20px;margin:16px 0">'
         f'<h2 style="margin-top:0">{escape(o["title"])}</h2>'
         f'<p>Parceiro: {escape(o["provider"])}</p>'
+        + f'<p>{escape(o.get("description", ""))}</p>'
         + ('<p>Publicidade: podemos receber comissão por compras elegíveis.</p>'
            f'<a style="display:inline-block;background:#ee4d9c;color:#091326;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:bold" href="/ofertas/{escape(k)}" rel="nofollow sponsored">Ver oferta no parceiro</a>'
-           if enabled else '<p style="color:#ffd28a">Aguardando validação do link e da autorização de afiliado. Compra indisponível por enquanto.</p>')
+           if enabled and o.get('url') else '<p style="color:#ffd28a">Aguardando validação de autorização e rastreamento. Direcionamento indisponível por enquanto.</p>')
         + '</article>'
         for k, o in AFFILIATE_OFFERS.items()
     )
@@ -210,6 +236,8 @@ def affiliate_outbound(offer_id: str):
     offer = AFFILIATE_OFFERS.get(offer_id)
     if not offer:
         raise HTTPException(404, "Oferta não encontrada")
+    if not offer.get("url"):
+        raise HTTPException(503, "Link de afiliado ainda não configurado")
     return RedirectResponse(url=offer["url"], status_code=302, headers={"Referrer-Policy": "no-referrer"})
 
 # Public, read-only visual prototype. No sales or autonomous actions.
