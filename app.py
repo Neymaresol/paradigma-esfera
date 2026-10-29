@@ -414,3 +414,40 @@ def agenda_ia_preview():
     hashes = ["'sha256-" + base64.b64encode(hashlib.sha256(js.encode("utf-8")).digest()).decode("ascii") + "'" for js in scripts]
     policy = "default-src 'self'; script-src 'self' " + " ".join(hashes) + "; img-src 'self' https://raw.githubusercontent.com; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
     return Response(content=html, media_type="text/html; charset=utf-8", headers={"Content-Security-Policy": policy})
+
+
+# Anonymous, in-memory staging click diagnostics. Counts reset on restart.
+# This is not payment, sale, commission, or durable analytics evidence.
+from collections import Counter
+from threading import Lock
+from fastapi import Request
+_ESFERA_CLICK_COUNTS = Counter()
+_ESFERA_CLICK_LOCK = Lock()
+_ESFERA_CLICK_PARTNERS = frozenset({"hotmart","amazon","shopee","mercadolivre","magalu"})
+
+@app.post("/api/analytics/affiliate-click", status_code=204)
+async def esfera_record_affiliate_click(request: Request):
+    raw = await request.body()
+    if len(raw) > 1024:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=413, detail="Payload too large")
+    import json
+    try:
+        data = json.loads(raw)
+    except (ValueError, UnicodeDecodeError):
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Invalid payload")
+    partner = data.get("partner") if isinstance(data, dict) else None
+    if partner not in _ESFERA_CLICK_PARTNERS:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=422, detail="Unknown partner")
+    with _ESFERA_CLICK_LOCK:
+        _ESFERA_CLICK_COUNTS[partner] += 1
+
+@app.get("/api/analytics/affiliate-clicks/status")
+def esfera_affiliate_click_status():
+    with _ESFERA_CLICK_LOCK:
+        counts = {name: _ESFERA_CLICK_COUNTS[name] for name in sorted(_ESFERA_CLICK_PARTNERS)}
+    return {"source":"anonymous_browser_beacon","persistence":"memory_only_resets_on_restart",
+            "verified_unique_visits":None,"confirmed_sales":None,
+            "confirmed_commissions_brl":None,"click_events_observed":counts}
