@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Query, Depends, Request
 from esfera_auth import require_operator
+from affiliate_catalog import router as affiliate_catalog_router
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 import os
 from fastapi.responses import HTMLResponse
@@ -10,6 +11,7 @@ from datetime import datetime, timezone
 from html import escape
 
 app = FastAPI(title='PARADIGMA ESFERA 1.0', version='1.3.1-dev', docs_url=None, redoc_url=None, openapi_url=None)
+app.include_router(affiliate_catalog_router)
 @app.middleware('http')
 async def security_headers(request: Request, call_next):
     response = await call_next(request)
@@ -241,7 +243,8 @@ def sales_campaign_draft(channel: str = "instagram", lang: str = "pt",
 # Original ESFERA visual is the canonical homepage; legacy catalog remains at /catalogo.
 @app.get('/', response_class=HTMLResponse)
 def esfera_home():
-    return werozinha_home()
+    """Public ESFERA storefront; shares preview CSP and verified layout."""
+    return agenda_ia_preview()
 
 @app.get('/werozinha', response_class=HTMLResponse)
 def werozinha_home():
@@ -291,3 +294,16 @@ if (_EsferaPath(__file__).parent / 'assets').is_dir():
 # Read-only partner integration diagnostics. No checkout or redirects.
 from esfera_partner_api import router as partner_api_router
 app.include_router(partner_api_router)
+
+
+# Staging-only preview; no partner redirects, ad publication or payments.
+@app.get("/agenda-ia-preview", response_class=HTMLResponse)
+def agenda_ia_preview():
+    """Staging preview with exact CSP hashes for its inline scripts."""
+    import hashlib, base64, re
+    from fastapi import Response
+    html = (Path(__file__).resolve().parent / "prototypes" / "esfera-agenda-ia-v1.html").read_text(encoding="utf-8")
+    scripts = re.findall(r'<script(?:\\s[^>]*)?>(.*?)</script>', html, flags=re.DOTALL | re.IGNORECASE)
+    hashes = ["'sha256-" + base64.b64encode(hashlib.sha256(js.encode("utf-8")).digest()).decode("ascii") + "'" for js in scripts]
+    policy = "default-src 'self'; script-src 'self' " + " ".join(hashes) + "; img-src 'self' https://raw.githubusercontent.com; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+    return Response(content=html, media_type="text/html; charset=utf-8", headers={"Content-Security-Policy": policy})
