@@ -10,7 +10,7 @@ def test_home_renders_werozinha_and_search():
     assert 'suggestions' in response.text
     assert 'id="wero-img"' in response.text
     assert 'https://raw.githubusercontent.com/Neymaresol/paradigma-esfera/main/assets/' in response.text
-    assert 'id="eventos"' in response.text
+    assert 'id="agenda-rail"' in response.text
     assert 'id="affiliate-rail"' in response.text
     assert 'Próximo gesto' not in response.text
     assert 'script-src' in response.headers['content-security-policy']
