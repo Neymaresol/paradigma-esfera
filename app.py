@@ -302,5 +302,5 @@ def agenda_ia_preview():
     html = (Path(__file__).resolve().parent / "prototypes" / "esfera-agenda-ia-v1.html").read_text(encoding="utf-8")
     scripts = re.findall(r'<script(?:\\s[^>]*)?>(.*?)</script>', html, flags=re.DOTALL | re.IGNORECASE)
     hashes = ["'sha256-" + base64.b64encode(hashlib.sha256(js.encode("utf-8")).digest()).decode("ascii") + "'" for js in scripts]
-    policy = "default-src 'self'; script-src 'self' " + " ".join(hashes) + "; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+    policy = "default-src 'self'; script-src 'self' " + " ".join(hashes) + "; img-src 'self' https://raw.githubusercontent.com; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
     return Response(content=html, media_type="text/html; charset=utf-8", headers={"Content-Security-Policy": policy})
