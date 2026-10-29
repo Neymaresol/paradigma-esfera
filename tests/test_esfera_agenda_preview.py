@@ -22,7 +22,7 @@ def test_preview_keeps_core_controls():
     assert {"filters", "agenda-rail", "offer-rail", "affiliate-rail", "wero-img", "question", "ask", "reply"}.issubset(inspector.ids)
     assert 'data-scroll="agenda-rail"' in html
     assert 'data-scroll="offer-rail"' in html
-    assert "scrollBy(" in html
+    assert "scrollTo(" in html and "scrollLeft" in html
     assert "5000" in html
 
 def test_preview_is_fail_closed_and_labels_examples():
