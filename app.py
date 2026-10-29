@@ -204,6 +204,29 @@ def affiliate_readiness():
             "commissions_reconciled": False,
             "financial_claims_allowed": False}
 
+@app.get("/api/affiliate/offers/status")
+def affiliate_offers_status():
+    """Public read-only status; configured URLs are not proof of partner authorization."""
+    publication = affiliate_publication_allowed()
+    return {
+        "version": "catalog-status-v1",
+        "publication_allowed": publication,
+        "offers": [
+            {
+                "id": offer_id,
+                "partner": offer["provider"],
+                "title": offer["title"],
+                "destination_configured": bool(offer.get("url")),
+                "outbound_enabled": bool(publication and offer.get("url")),
+                "status": "ready_for_redirect" if publication and offer.get("url") else "pending_partner_evidence",
+            }
+            for offer_id, offer in AFFILIATE_OFFERS.items()
+        ],
+        "verified_sales": None,
+        "verified_commissions_brl": None,
+        "note": "Configured links and environment flags do not independently establish attribution or sales.",
+    }
+
 @app.get("/ofertas", response_class=HTMLResponse)
 def affiliate_storefront():
     enabled = affiliate_publication_allowed()
