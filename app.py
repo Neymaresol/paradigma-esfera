@@ -183,8 +183,8 @@ AFFILIATE_OFFERS = {
     "magalu-inicial": {
         "title": "Produtos Magalu",
         "provider": "Magalu",
-        "url": "",
-        "description": "Link de destino ainda não cadastrado."
+        "url": "https://www.magazinevoce.com.br/magazinein_614184/",
+        "description": "Loja Magalu cadastrada; autorização e atribuição ainda exigem validação independente."
     }
 }
 
