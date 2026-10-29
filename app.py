@@ -291,3 +291,9 @@ if (_EsferaPath(__file__).parent / 'assets').is_dir():
 # Read-only partner integration diagnostics. No checkout or redirects.
 from esfera_partner_api import router as partner_api_router
 app.include_router(partner_api_router)
+
+
+# Staging-only preview; no partner redirects, ad publication or payments.
+@app.get("/agenda-ia-preview", response_class=HTMLResponse)
+def agenda_ia_preview():
+    return (Path(__file__).resolve().parent / "prototypes" / "esfera-agenda-ia-v1.html").read_text(encoding="utf-8")
