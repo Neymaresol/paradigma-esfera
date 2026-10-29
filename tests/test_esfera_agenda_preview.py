@@ -30,7 +30,12 @@ def test_preview_is_fail_closed_and_labels_examples():
     assert "eventos ilustrativos" in html
     assert "Links comerciais só serão habilitados" in html
     assert "atribuição não verificada" in html
-    assert 'href="/ofertas"' in html
+    assert 'href="/ofertas/item/hotmart-inicial"' in html
+    assert 'href="/ofertas/item/shopee-inicial"' in html
+    assert 'href="/ofertas/item/mercadolivre-inicial"' in html
+    assert 'href="/ofertas/item/amazon-inicial"' in html
+    assert 'href="/ofertas/item/magalu-inicial"' in html
+    assert 'href="/ofertas"' not in html
     assert "https://go.hotmart.com/" not in html
     assert "https://s.shopee.com.br/" not in html
     assert "https://meli.la/" not in html
