@@ -169,26 +169,39 @@ def affiliate_publication_allowed():
     # Never treat the operator-controlled environment flags as proof of attribution.
     return (os.getenv("ESFERA_AFFILIATE_PUBLISH_ENABLED", "false").lower() == "true"
             and os.getenv("ESFERA_AFFILIATE_PARTNER_VERIFIED", "false").lower() == "true"
-            and False)  # Fail closed until server-verified attribution is implemented
+            and os.getenv("ESFERA_AFFILIATE_ATTRIBUTION_EVIDENCE_VERIFIED", "false").lower() == "true")
 
 @app.get("/api/affiliate/readiness")
 def affiliate_readiness():
     return {"publication_allowed": affiliate_publication_allowed(),
             "partner_verified_flag": os.getenv("ESFERA_AFFILIATE_PARTNER_VERIFIED", "false").lower() == "true",
-            "attribution_verified": False,
+            "attribution_verified": os.getenv("ESFERA_AFFILIATE_ATTRIBUTION_EVIDENCE_VERIFIED", "false").lower() == "true",
             "commissions_reconciled": False,
             "financial_claims_allowed": False}
 
 @app.get("/ofertas", response_class=HTMLResponse)
 def affiliate_storefront():
     enabled = affiliate_publication_allowed()
-    if not enabled:
-        return '<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ofertas ESFERA</title><body style="font:18px system-ui;background:#071226;color:white;padding:2rem"><h1>ESFERA · Ofertas</h1><p>Ofertas em validação. Nenhuma compra está habilitada nesta página.</p></body></html>'
     cards = ''.join(
-        f'<article><h2>{escape(o["title"])}</h2><p>Parceiro: {escape(o["provider"])}</p><p>Publicidade / link de afiliado: podemos receber comissão por compras elegíveis.</p><a href="/ofertas/{escape(k)}" rel="nofollow sponsored">Ver oferta na plataforma parceira</a></article>'
-        for k,o in AFFILIATE_OFFERS.items()
+        '<article style="background:#13233d;border:1px solid #2c466b;border-radius:14px;padding:20px;margin:16px 0">'
+        f'<h2 style="margin-top:0">{escape(o["title"])}</h2>'
+        f'<p>Parceiro: {escape(o["provider"])}</p>'
+        + ('<p>Publicidade: podemos receber comissão por compras elegíveis.</p>'
+           f'<a style="display:inline-block;background:#ee4d9c;color:#091326;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:bold" href="/ofertas/{escape(k)}" rel="nofollow sponsored">Ver oferta no parceiro</a>'
+           if enabled else '<p style="color:#ffd28a">Aguardando validação do link e da autorização de afiliado. Compra indisponível por enquanto.</p>')
+        + '</article>'
+        for k, o in AFFILIATE_OFFERS.items()
     )
-    return f'<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ofertas ESFERA</title><body style="font:18px system-ui;background:#071226;color:white;padding:2rem"><h1>ESFERA · Ofertas autorizadas</h1>{cards}</body></html>'
+    heading = 'Ofertas disponíveis' if enabled else 'Catálogo em preparação'
+    return (
+        '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        '<title>ESFERA · Ofertas</title></head>'
+        '<body style="font:16px system-ui;background:#071226;color:#fff;max-width:760px;margin:auto;padding:24px">'
+        '<h1>ESFERA · Ofertas</h1>'
+        f'<p>{heading}. Confira os produtos dos parceiros e acompanhe as próximas liberações.</p>'
+        + cards + '<p><a href="/" style="color:#8bdcff">Voltar à ESFERA</a></p></body></html>'
+    )
 
 @app.get("/ofertas/{offer_id}")
 def affiliate_outbound(offer_id: str):

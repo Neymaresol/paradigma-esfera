@@ -68,3 +68,24 @@ async def test_preference(data: TestCheckout, actor: dict = Depends(require_oper
         raise HTTPException(502, "Sandbox checkout URL not validated")
     return {"status": "TEST_ONLY", "sandbox_checkout_url": url,
             "preference_id": result.get("id"), "payment_confirmed": False}
+
+@router.get("/diagnostics")
+async def diagnostics(actor: dict = Depends(require_operator)):
+    """Read-only provider credential check; never exposes secrets or customer data."""
+    token = os.getenv("MERCADOPAGO_ACCESS_TOKEN_TEST", "")
+    if not token:
+        return {"credential_present": False, "credential_accepted": False,
+                "provider_reachable": None, "production_checkout_enabled": False}
+    if not token.startswith("TEST-"):
+        return {"credential_present": True, "credential_accepted": False,
+                "provider_reachable": None, "production_checkout_enabled": False}
+    try:
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            response = await client.get(
+                "https://api.mercadopago.com/users/me",
+                headers={"Authorization": "Bearer " + token})
+    except httpx.RequestError:
+        return {"credential_present": True, "credential_accepted": False,
+                "provider_reachable": False, "production_checkout_enabled": False}
+    return {"credential_present": True, "credential_accepted": response.status_code == 200,
+            "provider_reachable": True, "production_checkout_enabled": False}
