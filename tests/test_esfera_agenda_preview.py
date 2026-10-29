@@ -30,9 +30,10 @@ def test_preview_is_fail_closed_and_labels_examples():
     assert "eventos ilustrativos" in html
     assert "Links comerciais só serão habilitados" in html
     assert "atribuição não verificada" in html
-    assert "https://go.hotmart.com/G108129576P" in html
-    assert "https://s.shopee.com.br/8fTUIY2010" in html
-    assert 'rel="noopener noreferrer sponsored"' in html
+    assert 'href="/ofertas"' in html
+    assert "https://go.hotmart.com/" not in html
+    assert "https://s.shopee.com.br/" not in html
+    assert "https://meli.la/" not in html
 
 def test_official_asset_path_is_retained():
     inspector = Inspector()
