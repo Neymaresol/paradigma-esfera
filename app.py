@@ -188,6 +188,22 @@ AFFILIATE_OFFERS = {
     }
 }
 
+# Explicit provider evidence registry. No provider has supplied independently verified
+# authorization + attribution evidence in this deployment.
+from esfera_partner_evidence import PartnerEvidence, eligible as partner_evidence_eligible
+AFFILIATE_VERIFIED_EVIDENCE: dict[str, PartnerEvidence] = {}
+
+def affiliate_offer_allowed(offer_id: str) -> bool:
+    offer = AFFILIATE_OFFERS.get(offer_id)
+    evidence = AFFILIATE_VERIFIED_EVIDENCE.get(offer_id)
+    return bool(
+        offer and offer.get("url") and affiliate_publication_allowed()
+        and evidence is not None and evidence.offer_id == offer_id
+        and evidence.provider == offer["provider"]
+        and evidence.affiliate_url == offer["url"]
+        and partner_evidence_eligible(evidence)
+    )
+
 def affiliate_publication_allowed():
     # Two independent release gates: publishing and partner authorization.
     # P0: explicit independent attribution evidence must be present before outbound links.
@@ -217,8 +233,8 @@ def affiliate_offers_status():
                 "partner": offer["provider"],
                 "title": offer["title"],
                 "destination_configured": bool(offer.get("url")),
-                "outbound_enabled": bool(publication and offer.get("url")),
-                "status": "ready_for_redirect" if publication and offer.get("url") else "pending_partner_evidence",
+                "outbound_enabled": affiliate_offer_allowed(offer_id),
+                "status": "ready_for_redirect" if affiliate_offer_allowed(offer_id) else "pending_partner_evidence",
             }
             for offer_id, offer in AFFILIATE_OFFERS.items()
         ],
@@ -237,7 +253,7 @@ def affiliate_storefront():
         + f'<p>{escape(o.get("description", ""))}</p>'
         + ('<p>Publicidade: podemos receber comissão por compras elegíveis.</p>'
            f'<a style="display:inline-block;background:#ee4d9c;color:#091326;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:bold" href="/ofertas/{escape(k)}" rel="nofollow sponsored">Ver oferta no parceiro</a>'
-           if enabled and o.get('url') else '<p style="color:#ffd28a">Aguardando validação de autorização e rastreamento. Direcionamento indisponível por enquanto.</p>')
+           if affiliate_offer_allowed(k) else '<p style="color:#ffd28a">Aguardando validação de autorização e rastreamento. Direcionamento indisponível por enquanto.</p>')
         + '</article>'
         for k, o in AFFILIATE_OFFERS.items()
     )
@@ -254,7 +270,7 @@ def affiliate_storefront():
 
 @app.get("/ofertas/{offer_id}")
 def affiliate_outbound(offer_id: str):
-    if not affiliate_publication_allowed():
+    if not affiliate_offer_allowed(offer_id):
         raise HTTPException(503, "Oferta ainda não autorizada para publicação")
     offer = AFFILIATE_OFFERS.get(offer_id)
     if not offer:
