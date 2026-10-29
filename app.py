@@ -268,6 +268,31 @@ def affiliate_storefront():
         + cards + '<p><a href="/" style="color:#8bdcff">Voltar à ESFERA</a></p></body></html>'
     )
 
+@app.get("/ofertas/item/{offer_id}", response_class=HTMLResponse)
+def affiliate_offer_detail(offer_id: str):
+    """Individual offer detail, with no outbound redirect without independent evidence."""
+    offer = AFFILIATE_OFFERS.get(offer_id)
+    if offer is None:
+        raise HTTPException(404, "Oferta não encontrada")
+    title = escape(offer["title"])
+    provider = escape(offer["provider"])
+    description = escape(offer.get("description", ""))
+    if affiliate_offer_allowed(offer_id):
+        action = (f'<a href="/ofertas/{escape(offer_id)}" rel="nofollow sponsored" '
+                  'style="display:inline-block;background:#ee4d9c;color:#091326;padding:12px 18px;'
+                  'border-radius:8px;text-decoration:none;font-weight:bold">Ver oferta no parceiro</a>')
+    else:
+        action = ('<p role="status" style="color:#ffd28a">Esta oferta ainda não possui '
+                  'autorização e rastreamento comprovados. Compra indisponível.</p>')
+    return ('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">'
+            '<meta name="viewport" content="width=device-width,initial-scale=1">'
+            f'<title>{title} · ESFERA</title></head>'
+            '<body style="font:16px system-ui;background:#071226;color:#fff;'
+            'max-width:760px;margin:auto;padding:24px">'
+            f'<h1>{title}</h1><p>Parceiro: {provider}</p><p>{description}</p>'
+            + action + '<p><a href="/" style="color:#8bdcff">Voltar à ESFERA</a></p>'
+            '</body></html>')
+
 @app.get("/ofertas/{offer_id}")
 def affiliate_outbound(offer_id: str):
     if not affiliate_offer_allowed(offer_id):
