@@ -34,7 +34,7 @@ def shell(title,description,body):
 def verified_offers_for(query):
     from app import AFFILIATE_OFFERS, affiliate_offer_allowed
     
-    words=[w for w in re.findall(r"[\\w]+",norm(query)) if w not in {"curso","cursos","de","da","do","para","quero","aprender"}]
+    words=[w for w in re.findall(r"\w+",norm(query)) if w not in {"curso","cursos","de","da","do","para","quero","aprender"}]
     if not words:
         return []
     return [{"id":key,"title":offer["title"],"provider":offer["provider"],"url":"/ofertas/"+key}
