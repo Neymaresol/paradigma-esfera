@@ -45,6 +45,23 @@ def verified_offers_for(query):
 def discovery_offers(q: str=Query("",max_length=120)):
     return {"query":q,"offers":verified_offers_for(q),"verified_only":True}
 
+@router.get("/api/discovery/catalog")
+def discovery_catalog(q: str=Query("",max_length=120)):
+    """Single read-only source for search UI and Werozinha, without bypassing gates."""
+    related_topics = [
+        {"slug":t["slug"], "title":t["title"], "summary":t["summary"],
+         "url":"/interesses/"+t["slug"]}
+        for t in TOPICS if matches(q,t)
+    ]
+    return {
+        "query":q,
+        "offers":verified_offers_for(q),
+        "topics":related_topics,
+        "fronts":classify(q)["fronts"],
+        "verified_only":True,
+        "message":"Ofertas afiliadas disponíveis" if verified_offers_for(q) else "Nenhuma oferta afiliada verificada para esta busca",
+    }
+
 @router.get("/api/discovery/topics")
 def topics(q: str=Query("",max_length=120)):
     return {"query":q,"results":[{"slug":t["slug"],"title":t["title"],"summary":t["summary"],"url":"/interesses/"+t["slug"]} for t in TOPICS if matches(q,t)],"commerce_status":"no_verified_offers"}
