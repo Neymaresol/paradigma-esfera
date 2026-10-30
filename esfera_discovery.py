@@ -59,7 +59,7 @@ def discovery_catalog(q: str=Query("",max_length=120)):
         "topics":related_topics,
         "fronts":classify(q)["fronts"],
         "verified_only":True,
-        "message":"Ofertas afiliadas disponíveis" if verified_offers_for(q) else "Nenhuma oferta afiliada verificada para esta busca",
+        "message":"Ofertas afiliadas disponíveis" if offers else "Nenhuma oferta afiliada verificada para esta busca",
     }
 
 @router.get("/api/discovery/topics")
