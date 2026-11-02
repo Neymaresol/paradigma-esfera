@@ -11,6 +11,7 @@ def test_discovery_search_returns_relevant_topic_and_safe_offer_state():
     assert any(item["slug"] == "tecnologia-e-produtos" for item in data["results"])
     assert data["commercial_status"] == "verified_offers_only"
     assert isinstance(data["offers"], list)
+    assert data["intent"]["engine"] == "keywords"
 
 
 def test_discovery_search_supports_services_and_accented_terms():
