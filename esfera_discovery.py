@@ -9,7 +9,7 @@ from urllib.parse import quote
 from fastapi import APIRouter, Query
 from fastapi.responses import HTMLResponse
 
-from esfera_ai_routing import classify
+from esfera_ai_routing import classify, fallback as fallback_classify
 router = APIRouter()
 TOPICS = [
     {"slug":"inteligencia-artificial","title":"Inteligência Artificial","keywords":["ia","inteligencia artificial","automacao","chatbot","tecnologia"],"summary":"Descubra temas e formações em inteligência artificial e automação."},
@@ -17,16 +17,33 @@ TOPICS = [
     {"slug":"planilhas-produtividade","title":"Planilhas e Produtividade","keywords":["excel","planilhas","trabalho","produtividade","office"],"summary":"Conheça assuntos relacionados a planilhas e organização do trabalho."},
     {"slug":"seguranca-digital","title":"Segurança Digital","keywords":["seguranca","privacidade","internet","dados","ciberseguranca"],"summary":"Aprenda conceitos de proteção de contas, privacidade e navegação segura."},
     {"slug":"curso-ingles","title":"Curso de Inglês","keywords":["ingles","english","idiomas","lingua inglesa","conversacao","fluencia"],"summary":"Explore trilhas de aprendizado de inglês, do básico à conversação. Ofertas dependem de verificação."},
-    {"slug":"carreira-profissional","title":"Carreira Profissional","keywords":["curriculo","emprego","profissao","carreira","entrevista"],"summary":"Encontre temas de desenvolvimento profissional e preparação de currículo."},
+    {"slug":"carreira-profissional","title":"Carreira Profissional","keywords":["curriculo","emprego","profissao","carreira","entrevista","trabalho"],"summary":"Encontre temas de desenvolvimento profissional e preparação de currículo."},
+    {"slug":"tecnologia-e-produtos","title":"Tecnologia e Produtos","keywords":["tecnologia","notebook","computador","celular","smartphone","fone","eletronicos","informatica","gamer","hardware"],"summary":"Explore conteúdos e categorias de tecnologia. Produtos e links de compra só aparecem quando o parceiro e o rastreamento estão verificados."},
+    {"slug":"beleza-e-cuidados","title":"Beleza e Cuidados","keywords":["beleza","maquiagem","manicure","unhas","cabelo","cosmeticos","cuidados","estetica"],"summary":"Explore temas de beleza, estética e cuidados pessoais. Ofertas dependem de validação do parceiro."},
+    {"slug":"esportes-e-lazer","title":"Esportes e Lazer","keywords":["esporte","esportes","futebol","corrida","academia","fitness","lazer","bola","camisa"],"summary":"Explore assuntos de esportes e lazer. Produtos só serão direcionados após validação comercial."},
+    {"slug":"viagens-e-turismo","title":"Viagens e Turismo","keywords":["viagem","viagens","turismo","mala","malas","hotel","passagem","destino"],"summary":"Explore planejamento de viagens e turismo. Reservas e ofertas externas exigem validação."},
+    {"slug":"servicos-digitais","title":"Serviços Digitais","keywords":["servico","servicos","consultoria","automacao","chatbot","integracao","site","aplicativo","software","suporte"],"summary":"Conheça temas de serviços digitais e automação. Não há contratação ou pagamento nesta página sem oferta verificada."},
 ]
 def norm(s):
     return "".join(c for c in unicodedata.normalize("NFKD",s.lower()) if not unicodedata.combining(c))
+STOP_WORDS = {"curso","cursos","de","da","do","das","dos","para","por","um","uma","uns","umas","quero","queria","aprender","estudar","sobre","com","em","no","na","nos","nas","e","ou","o","a","os","as","me","mostre","buscar","pesquisar","consulta","consultar"}
+
+def query_terms(query):
+    return [w for w in re.findall(r"[\w]+", norm(query)) if w not in STOP_WORDS][:10]
+
 def matches(query,topic):
-    q=norm(query).strip()
-    if not q:return True
+    terms=query_terms(query)
+    if not terms:return True
     hay=norm(" ".join([topic["title"],topic["summary"],*topic["keywords"]]))
-    words=[w for w in re.findall(r"[\w]+",q) if w not in {"curso","cursos","de","da","do","para","um","uma","quero","aprender","estudar"}][:8]
-    return all(word in hay for word in words)
+    # Match any meaningful query term so a modifier (e.g. "gamer") does not
+    # hide a valid category result. Rank by number of matching terms below.
+    return any(word in set(re.findall(r"[\w]+", hay)) for word in terms)
+
+def ranked_topics(query):
+    terms=query_terms(query)
+    found=[t for t in TOPICS if matches(query,t)]
+    if not terms:return found
+    return sorted(found,key=lambda t:sum(word in set(re.findall(r"[\w]+", norm(" ".join([t["title"],*t["keywords"]])))) for word in terms),reverse=True)
 def shell(title,description,body):
     return f"""<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow"><meta name="description" content="{escape(description,quote=True)}"><title>{escape(title)} | PARADIGMA ESFERA</title><style>body{{background:#061229;color:#eef8ff;font:16px system-ui;margin:0}}main{{max-width:1100px;margin:auto;padding:50px 22px}}h1{{font-size:clamp(35px,5vw,62px)}}p{{color:#b6cce3;line-height:1.7}}a{{color:#7ddaff}}form{{display:flex;gap:8px;flex-wrap:wrap;margin:25px 0}}input{{padding:15px;background:#102b4b;border:1px solid #47739e;border-radius:10px;color:white;min-width:220px;flex:1}}button{{padding:15px 22px;border:0;border-radius:10px;background:#7ddaff;color:#061229;font-weight:700}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}}article{{padding:23px;background:#0e2544;border:1px solid #315c83;border-radius:16px}}small{{color:#92abc5}}nav{{padding:20px;border-bottom:1px solid #315c83}}.note{{padding:15px;border-left:3px solid #edc57c}}</style></head><body><nav><a href="/descobrir">✦ PARADIGMA ESFERA</a></nav><main>{body}</main></body></html>"""
 
@@ -34,12 +51,19 @@ def shell(title,description,body):
 def verified_offers_for(query):
     from app import AFFILIATE_OFFERS, affiliate_offer_allowed
     
-    words=[w for w in re.findall(r"\w+",norm(query)) if w not in {"curso","cursos","de","da","do","para","quero","aprender"}]
+    words=query_terms(query)
     if not words:
         return []
-    return [{"id":key,"title":offer["title"],"provider":offer["provider"],"url":"/ofertas/"+key}
-            for key,offer in AFFILIATE_OFFERS.items()
-            if affiliate_offer_allowed(key) and all(w in norm(offer["title"]) for w in words)]
+    ranked=[]
+    for key,offer in AFFILIATE_OFFERS.items():
+        if not affiliate_offer_allowed(key):
+            continue
+        title=norm(offer["title"])
+        score=sum(word in set(re.findall(r"\w+",title)) for word in words)
+        if score:
+            ranked.append((score,{"id":key,"title":offer["title"],"provider":offer["provider"],"url":"/ofertas/"+key}))
+    ranked.sort(key=lambda item:item[0],reverse=True)
+    return [item for _,item in ranked]
 
 @router.get("/api/discovery/offers")
 def discovery_offers(q: str=Query("",max_length=120)):
@@ -47,7 +71,22 @@ def discovery_offers(q: str=Query("",max_length=120)):
 
 @router.get("/api/discovery/topics")
 def topics(q: str=Query("",max_length=120)):
-    return {"query":q,"results":[{"slug":t["slug"],"title":t["title"],"summary":t["summary"],"url":"/interesses/"+t["slug"]} for t in TOPICS if matches(q,t)],"commerce_status":"no_verified_offers"}
+    return {"query":q,"results":[{"slug":t["slug"],"title":t["title"],"summary":t["summary"],"url":"/interesses/"+t["slug"]} for t in ranked_topics(q)],"commerce_status":"no_verified_offers"}
+
+@router.get("/api/discovery/search")
+def discovery_search(q: str=Query("",max_length=120)):
+    """Unified search response consumed by the public ESFERA search and Werozinha."""
+    topics_found=ranked_topics(q)
+    offers=verified_offers_for(q)
+    return {
+        "query":q,
+        "intent":fallback_classify(q),
+        "results":[{"type":"topic","slug":t["slug"],"title":t["title"],"summary":t["summary"],"url":"/interesses/"+t["slug"]} for t in topics_found],
+        "offers":offers,
+        "commercial_status":"verified_offers_only",
+        "message":None if offers else "Não há oferta comercial verificada para esta consulta no momento."
+    }
+
 @router.get("/api/discovery/route")
 def route_search(q: str=Query("",max_length=120)):
     return classify(q)
