@@ -9,7 +9,7 @@ from urllib.parse import quote
 from fastapi import APIRouter, Query
 from fastapi.responses import HTMLResponse
 
-from esfera_ai_routing import classify
+from esfera_ai_routing import classify, fallback as fallback_classify
 router = APIRouter()
 TOPICS = [
     {"slug":"inteligencia-artificial","title":"Inteligência Artificial","keywords":["ia","inteligencia artificial","automacao","chatbot","tecnologia"],"summary":"Descubra temas e formações em inteligência artificial e automação."},
@@ -51,12 +51,19 @@ def shell(title,description,body):
 def verified_offers_for(query):
     from app import AFFILIATE_OFFERS, affiliate_offer_allowed
     
-    words=[w for w in re.findall(r"\w+",norm(query)) if w not in {"curso","cursos","de","da","do","para","quero","aprender"}]
+    words=query_terms(query)
     if not words:
         return []
-    return [{"id":key,"title":offer["title"],"provider":offer["provider"],"url":"/ofertas/"+key}
-            for key,offer in AFFILIATE_OFFERS.items()
-            if affiliate_offer_allowed(key) and all(w in norm(offer["title"]) for w in words)]
+    ranked=[]
+    for key,offer in AFFILIATE_OFFERS.items():
+        if not affiliate_offer_allowed(key):
+            continue
+        title=norm(offer["title"])
+        score=sum(word in set(re.findall(r"\w+",title)) for word in words)
+        if score:
+            ranked.append((score,{"id":key,"title":offer["title"],"provider":offer["provider"],"url":"/ofertas/"+key}))
+    ranked.sort(key=lambda item:item[0],reverse=True)
+    return [item for _,item in ranked]
 
 @router.get("/api/discovery/offers")
 def discovery_offers(q: str=Query("",max_length=120)):
@@ -73,7 +80,7 @@ def discovery_search(q: str=Query("",max_length=120)):
     offers=verified_offers_for(q)
     return {
         "query":q,
-        "intent":classify(q),
+        "intent":fallback_classify(q),
         "results":[{"type":"topic","slug":t["slug"],"title":t["title"],"summary":t["summary"],"url":"/interesses/"+t["slug"]} for t in topics_found],
         "offers":offers,
         "commercial_status":"verified_offers_only",
