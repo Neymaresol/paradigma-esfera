@@ -64,7 +64,7 @@ def discovery_offers(q: str=Query("",max_length=120)):
 
 @router.get("/api/discovery/topics")
 def topics(q: str=Query("",max_length=120)):
-    return {"query":q,"results":[{"slug":t["slug"],"title":t["title"],"summary":t["summary"],"url":"/interesses/"+t["slug"]} for t in ranked_topics(q)],"commerce_status":"verified_offers_only"}
+    return {"query":q,"results":[{"slug":t["slug"],"title":t["title"],"summary":t["summary"],"url":"/interesses/"+t["slug"]} for t in ranked_topics(q)],"commerce_status":"no_verified_offers"}
 
 @router.get("/api/discovery/search")
 def discovery_search(q: str=Query("",max_length=120)):
