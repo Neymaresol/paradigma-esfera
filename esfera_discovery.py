@@ -29,7 +29,7 @@ def norm(s):
 STOP_WORDS = {"curso","cursos","de","da","do","das","dos","para","por","um","uma","uns","umas","quero","queria","aprender","estudar","sobre","com","em","no","na","nos","nas","e","ou","o","a","os","as","me","mostre","buscar","pesquisar","consulta","consultar"}
 
 def query_terms(query):
-    return [w for w in re.findall(r"[\\w]+", norm(query)) if w not in STOP_WORDS][:10]
+    return [w for w in re.findall(r"[\w]+", norm(query)) if w not in STOP_WORDS][:10]
 
 def matches(query,topic):
     terms=query_terms(query)
@@ -37,13 +37,13 @@ def matches(query,topic):
     hay=norm(" ".join([topic["title"],topic["summary"],*topic["keywords"]]))
     # Match any meaningful query term so a modifier (e.g. "gamer") does not
     # hide a valid category result. Rank by number of matching terms below.
-    return any(word in set(re.findall(r"[\\w]+", hay)) for word in terms)
+    return any(word in set(re.findall(r"[\w]+", hay)) for word in terms)
 
 def ranked_topics(query):
     terms=query_terms(query)
     found=[t for t in TOPICS if matches(query,t)]
     if not terms:return found
-    return sorted(found,key=lambda t:sum(word in set(re.findall(r"[\\w]+", norm(" ".join([t["title"],*t["keywords"]])))) for word in terms),reverse=True)
+    return sorted(found,key=lambda t:sum(word in set(re.findall(r"[\w]+", norm(" ".join([t["title"],*t["keywords"]])))) for word in terms),reverse=True)
 def shell(title,description,body):
     return f"""<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow"><meta name="description" content="{escape(description,quote=True)}"><title>{escape(title)} | PARADIGMA ESFERA</title><style>body{{background:#061229;color:#eef8ff;font:16px system-ui;margin:0}}main{{max-width:1100px;margin:auto;padding:50px 22px}}h1{{font-size:clamp(35px,5vw,62px)}}p{{color:#b6cce3;line-height:1.7}}a{{color:#7ddaff}}form{{display:flex;gap:8px;flex-wrap:wrap;margin:25px 0}}input{{padding:15px;background:#102b4b;border:1px solid #47739e;border-radius:10px;color:white;min-width:220px;flex:1}}button{{padding:15px 22px;border:0;border-radius:10px;background:#7ddaff;color:#061229;font-weight:700}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}}article{{padding:23px;background:#0e2544;border:1px solid #315c83;border-radius:16px}}small{{color:#92abc5}}nav{{padding:20px;border-bottom:1px solid #315c83}}.note{{padding:15px;border-left:3px solid #edc57c}}</style></head><body><nav><a href="/descobrir">✦ PARADIGMA ESFERA</a></nav><main>{body}</main></body></html>"""
 
