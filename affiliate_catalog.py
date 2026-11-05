@@ -70,3 +70,18 @@ def list_offers(partner: str | None = None):
             FROM esfera_affiliate_offers WHERE (%s IS NULL OR partner=%s)
             AND status='approved' ORDER BY partner,updated_at DESC LIMIT 500""",(partner,partner)).fetchall()
     return {"offers": rows, "source": "staging_neon", "commissions_verified": False}
+
+
+
+def approved_catalog_read(partner: str | None = None):
+    """Return only offers explicitly moved to approved status by an operator.
+    Missing staging DB or schema errors are surfaced to callers; never fall back to demo links.
+    """
+    if partner is not None and partner not in HOSTS:
+        raise HTTPException(422, "Unknown partner")
+    with conn() as c:
+        rows = c.execute("""SELECT partner,title,affiliate_url,description,status,updated_at
+            FROM esfera_affiliate_offers
+            WHERE (%s IS NULL OR partner=%s) AND status='approved'
+            ORDER BY partner,updated_at DESC LIMIT 500""", (partner, partner)).fetchall()
+    return [dict(row) for row in rows]
