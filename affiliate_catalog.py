@@ -38,6 +38,7 @@ def validate(o):
     return p
 
 def ensure_table(c):
+    """Create the staging table only from the explicit import/write workflow."""
     c.execute("""CREATE TABLE IF NOT EXISTS esfera_affiliate_offers (
         id BIGSERIAL PRIMARY KEY, partner TEXT NOT NULL, title TEXT NOT NULL,
         affiliate_url TEXT NOT NULL, description TEXT NOT NULL DEFAULT '',
@@ -62,11 +63,29 @@ def import_offers(batch: Batch, actor: dict = Depends(require_operator)):
 
 @router.get("/offers")
 def list_offers(partner: str | None = None):
+    """Read approved offers without creating or changing database objects."""
     if partner is not None and partner not in HOSTS:
         raise HTTPException(422, "Unknown partner")
     with conn() as c:
-        ensure_table(c)
+        # to_regclass is a read-only existence check. A first-time GET must never
+        # run DDL or otherwise initialize the staging catalog as a side effect.
+        table = c.execute(
+            "SELECT to_regclass(%s) AS table_name",
+            ("esfera_affiliate_offers",),
+        ).fetchone()
+        if not table or table["table_name"] is None:
+            return {
+                "offers": [],
+                "source": "staging_neon",
+                "commissions_verified": False,
+                "catalog_initialized": False,
+            }
         rows = c.execute("""SELECT partner,title,affiliate_url,description,status,updated_at
             FROM esfera_affiliate_offers WHERE (%s IS NULL OR partner=%s)
             AND status='approved' ORDER BY partner,updated_at DESC LIMIT 500""",(partner,partner)).fetchall()
-    return {"offers": rows, "source": "staging_neon", "commissions_verified": False}
+    return {
+        "offers": rows,
+        "source": "staging_neon",
+        "commissions_verified": False,
+        "catalog_initialized": True,
+    }
